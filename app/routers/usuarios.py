@@ -1,20 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.database import get_db_connection
 from app.models import UserResponse
-from app.security import verify_token
+from app.security import get_current_user  # ✅ Importar desde security
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
-
-# Dependency para verificar token y roles
-def get_current_user(token: str = Depends(lambda: None)):
-    if not token:
-        raise HTTPException(status_code=401, detail="Token missing")
-    
-    payload = verify_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    return payload
 
 def require_admin(current_user: dict = Depends(get_current_user)):
     if current_user.get("rol") != "admin":

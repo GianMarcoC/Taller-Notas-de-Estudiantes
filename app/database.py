@@ -7,7 +7,7 @@ def get_db_connection():
             host='localhost',
             database='sistema_notas',
             user='root',  # Cambia si usas otro usuario
-            password=''   # Coloca tu password de MySQL
+            password='GoMyGCRTES12*'   # Coloca tu password de MySQL
         )
         if connection.is_connected():
             return connection

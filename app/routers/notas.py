@@ -1,20 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.database import get_db_connection
 from app.models import NotaCreate, NotaResponse
-from app.security import verify_token
+from app.security import get_current_user  # ✅ Importar desde security
 
 router = APIRouter(prefix="/notas", tags=["notas"])
-
-# Dependency para verificar token
-def get_current_user(token: str = Depends(lambda: None)):
-    if not token:
-        raise HTTPException(status_code=401, detail="Token missing")
-    
-    payload = verify_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    return payload
 
 # Solo admin y profesor pueden crear/editar notas
 def require_profesor_or_admin(current_user: dict = Depends(get_current_user)):

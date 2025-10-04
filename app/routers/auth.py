@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.database import get_db_connection
 from app.models import LoginRequest, Token, UserCreate, UserResponse
-from app.security import verify_password, get_password_hash, create_access_token, verify_token
-from datetime import timedelta
+from app.security import verify_password, get_password_hash, create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -21,7 +20,7 @@ async def login(login_data: LoginRequest):
         
         if not user or not verify_password(login_data.password, user['password_hash']):
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=401,
                 detail="Credenciales incorrectas",
                 headers={"WWW-Authenticate": "Bearer"},
             )
@@ -55,8 +54,14 @@ async def register(user_data: UserCreate):
         if cursor.fetchone():
             raise HTTPException(status_code=400, detail="El email ya está registrado")
         
-        # Hash password
-        hashed_password = get_password_hash(user_data.password)
+        # Hash password con manejo de errores mejorado
+        try:
+            hashed_password = get_password_hash(user_data.password)
+        except Exception as hash_error:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Error procesando contraseña: {str(hash_error)}"
+            )
         
         # Insertar usuario
         cursor.execute(
@@ -84,3 +89,12 @@ async def register(user_data: UserCreate):
     finally:
         cursor.close()
         conn.close()
+
+@router.post("/refresh", response_model=Token)
+async def refresh_token(current_user: dict = Depends(get_current_user)):
+    # Crear nuevo token con la misma información
+    new_token = create_access_token(
+        data={"sub": current_user['sub'], "rol": current_user['rol'], "user_id": current_user['user_id']}
+    )
+    
+    return {"access_token": new_token, "token_type": "bearer"}
