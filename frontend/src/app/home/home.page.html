@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title> Sistema de Notas Seguras </ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" color="light">
+        <ion-icon name="log-out-outline"></ion-icon>
+        Cerrar sesión
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="home-container ion-padding">
+  <div class="welcome-section">
+    <h2>Bienvenido 👋</h2>
+    <p>Selecciona un módulo para gestionar la información:</p>
+  </div>
+
+  <div class="menu-grid">
+    <ion-card button [routerLink]="['/usuarios']">
+      <ion-card-header>
+        <ion-icon name="people" class="icono"></ion-icon>
+        <ion-card-title>Usuarios</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>Gestión de cuentas y roles</ion-card-content>
+    </ion-card>
+
+    <ion-card button [routerLink]="['/estudiantes']">
+      <ion-card-header>
+        <ion-icon name="school" class="icono"></ion-icon>
+        <ion-card-title>Estudiantes</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>Registro y edición de estudiantes</ion-card-content>
+    </ion-card>
+
+    <ion-card button [routerLink]="['/notas']">
+      <ion-card-header>
+        <ion-icon name="document-text" class="icono"></ion-icon>
+        <ion-card-title>Notas</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>Gestión de calificaciones</ion-card-content>
+    </ion-card>
+
+    <ion-card button [routerLink]="['/mis-notas']">
+      <ion-card-header>
+        <ion-icon name="bar-chart" class="icono"></ion-icon>
+        <ion-card-title>Mis Notas</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>Consulta de calificaciones</ion-card-content>
+    </ion-card>
+
+    <ion-card button [routerLink]="['/auditoria']">
+      <ion-card-header>
+        <ion-icon name="clipboard" class="icono"></ion-icon>
+        <ion-card-title>Auditoría</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>Historial de acciones del sistema</ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

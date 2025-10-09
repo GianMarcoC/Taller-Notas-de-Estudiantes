@@ -1,0 +1,33 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Gestión de Estudiantes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-button color="success" expand="block"
+    >➕ Registrar Estudiante</ion-button
+  >
+
+  <ion-grid>
+    <ion-row>
+      <ion-col><b>Nombre</b></ion-col>
+      <ion-col><b>Código</b></ion-col>
+      <ion-col><b>Carrera</b></ion-col>
+      <ion-col><b>Acciones</b></ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let est of estudiantes">
+      <ion-col>{{est.nombre}}</ion-col>
+      <ion-col>{{est.codigo}}</ion-col>
+      <ion-col>{{est.carrera}}</ion-col>
+      <ion-col>
+        <ion-button color="tertiary" size="small">✏️</ion-button>
+        <ion-button color="danger" size="small">🗑️</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

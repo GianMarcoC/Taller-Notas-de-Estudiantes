@@ -1,0 +1,33 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" color="light"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Mis Notas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-list>
+    <ion-item *ngFor="let n of misNotas">
+      <ion-label>
+        <h2>{{n.materia}}</h2>
+        <p>Nota: {{n.valor}}</p>
+      </ion-label>
+      <ion-badge color="primary">{{n.valor}}</ion-badge>
+    </ion-item>
+  </ion-list>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Promedio General</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-progress-bar
+        [value]="promedio / 5"
+        color="success"
+      ></ion-progress-bar>
+      <p style="text-align: center; margin-top: 8px">{{promedio}} / 5.0</p>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

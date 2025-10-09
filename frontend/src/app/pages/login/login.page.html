@@ -1,0 +1,29 @@
+<ion-content class="login-container">
+  <div class="login-box">
+    <img
+      src="assets/logo-universidad.png"
+      alt="Logo Universidad"
+      class="logo"
+    />
+
+    <h2>Ingreso al Sistema</h2>
+
+    <ion-item>
+      <ion-label position="floating">Correo o Usuario</ion-label>
+      <ion-input [(ngModel)]="usuario" type="text" required></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Contraseña</ion-label>
+      <ion-input [(ngModel)]="password" type="password" required></ion-input>
+    </ion-item>
+
+    <ion-button expand="block" color="primary" (click)="login()"
+      >Iniciar Sesión</ion-button
+    >
+
+    <p class="intentos" *ngIf="intentos >= 3">
+      Verifica el CAPTCHA para continuar
+    </p>
+  </div>
+</ion-content>

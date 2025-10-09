@@ -1,0 +1,33 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Gestión de Usuarios</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-button color="success" expand="block">➕ Crear Usuario</ion-button>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col><b>ID</b></ion-col>
+      <ion-col><b>Nombre</b></ion-col>
+      <ion-col><b>Email</b></ion-col>
+      <ion-col><b>Rol</b></ion-col>
+      <ion-col><b>Acciones</b></ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let user of users">
+      <ion-col>{{user.id}}</ion-col>
+      <ion-col>{{user.nombre}}</ion-col>
+      <ion-col>{{user.email}}</ion-col>
+      <ion-col>{{user.rol}}</ion-col>
+      <ion-col>
+        <ion-button color="tertiary" size="small">✏️</ion-button>
+        <ion-button color="danger" size="small">🗑️</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

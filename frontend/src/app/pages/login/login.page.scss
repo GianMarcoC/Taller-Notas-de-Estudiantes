@@ -1,0 +1,33 @@
+.login-container {
+  --background: #f5f8ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.login-box {
+  background: #fff;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.logo {
+  width: 80px;
+  margin-bottom: 10px;
+}
+
+h2 {
+  color: #003366;
+  margin-bottom: 20px;
+}
+
+.intentos {
+  color: #c0392b;
+  font-size: 0.9rem;
+  margin-top: 10px;
+}

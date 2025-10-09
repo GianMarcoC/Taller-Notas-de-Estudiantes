@@ -1,0 +1,169 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+@import "@ionic/angular/css/palettes/dark.system.css";
+
+/* ==========================================================================
+   🎨 Personalización global del sistema
+   ========================================================================== */
+
+/* --- Tipografía global (Inter) --- */
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #f4f6f8;
+  color: #1e293b;
+  margin: 0;
+}
+
+/* --- Paleta de colores global --- */
+:root {
+  --ion-color-primary: #2563eb; /* Azul */
+  --ion-color-secondary: #10b981; /* Verde */
+  --ion-color-tertiary: #facc15; /* Amarillo suave */
+  --ion-color-danger: #ef4444; /* Rojo */
+  --ion-color-dark: #1e293b; /* Azul oscuro */
+  --ion-color-light: #f8fafc; /* Gris claro */
+}
+
+/* --- Encabezados y barra superior --- */
+ion-toolbar {
+  --background: #3880ff; /* azul Ionic */
+  --color: #fff;
+}
+
+ion-back-button {
+  color: #fff;
+}
+
+/* --- Botones globales --- */
+ion-button {
+  --border-radius: 12px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.4px;
+}
+
+/* Hover (efecto visual sutil) */
+ion-button:hover {
+  filter: brightness(1.05);
+}
+
+/* --- Inputs y campos --- */
+ion-input,
+ion-select,
+ion-textarea {
+  --background: #ffffff;
+  --border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  padding: 6px 12px;
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+
+/* --- Cards (contenedores principales) --- */
+ion-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  margin: 12px;
+  padding: 10px;
+}
+
+/* --- Títulos globales --- */
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  margin-bottom: 0.5rem;
+}
+
+h1 {
+  font-size: 1.8rem;
+}
+
+h2 {
+  font-size: 1.4rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+  color: #334155;
+}
+
+/* --- Tablas y listas --- */
+ion-grid {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+ion-row,
+ion-col {
+  padding: 6px;
+}
+
+/* --- Back button --- */
+ion-back-button {
+  color: #fff;
+  --icon-font-size: 22px;
+}
+
+/* --- Enlaces y estados --- */
+a {
+  color: var(--ion-color-primary);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* --- Scrollbar (moderna) --- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* --- Animaciones suaves --- */
+* {
+  transition: all 0.2s ease-in-out;
+}

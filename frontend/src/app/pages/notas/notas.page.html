@@ -1,0 +1,30 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Gestión de Notas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-button color="success" expand="block">➕ Nueva Nota</ion-button>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col><b>Estudiante</b></ion-col>
+      <ion-col><b>Materia</b></ion-col>
+      <ion-col><b>Nota</b></ion-col>
+      <ion-col><b>Profesor</b></ion-col>
+      <ion-col><b>Fecha</b></ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let n of notas">
+      <ion-col>{{n.estudiante}}</ion-col>
+      <ion-col>{{n.materia}}</ion-col>
+      <ion-col>{{n.valor}}</ion-col>
+      <ion-col>{{n.profesor}}</ion-col>
+      <ion-col>{{n.fecha}}</ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
