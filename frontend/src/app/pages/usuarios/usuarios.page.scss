@@ -43,7 +43,7 @@
   }
 
   p {
-    color: var(--ion-color-medium);
+    color: var(--ion-color-dark);
     margin: 0;
     font-weight: 600;
     font-size: 0.9rem;
@@ -60,7 +60,7 @@
     ion-card-title {
       font-size: 1.4rem;
       font-weight: 700;
-      color: var(--ion-color-dark);
+      color: var(--ion-color-medium);
     }
 
     ion-card-subtitle {
@@ -102,7 +102,7 @@
   h2 {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--ion-color-dark);
+    color: var(--ion-color-medium);
     margin-bottom: 0.25rem;
   }
 

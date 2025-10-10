@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
   imports: [IonicModule, CommonModule, FormsModule],
   templateUrl: './auditoria.page.html',
   styleUrls: ['./auditoria.page.scss'],
+ 
 })
 export class AuditoriaPage {
   filtro = '';

@@ -1,27 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-
-// Importa los módulos necesarios
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // ← Importante para ngModel
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
-  standalone: true, // Si estás usando componentes standalone
-  imports: [IonicModule, CommonModule, FormsModule] // ← Agrega estos imports
+  standalone: true,
+  imports: [IonicModule, CommonModule, FormsModule],
 })
 export class LoginPage implements OnInit {
   username: string = '';
   password: string = '';
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit() {
     // Si ya está autenticado, redirigir a home
@@ -31,22 +26,23 @@ export class LoginPage implements OnInit {
   }
 
   login() {
-    if (!this.username.trim()) {
-      this.mostrarError('Por favor ingresa un usuario');
-      return;
-    }
-
-    if (!this.password.trim()) {
-      this.mostrarError('Por favor ingresa una contraseña');
+    if (!this.username.trim() || !this.password.trim()) {
+      this.mostrarError('Por favor completa todos los campos');
       return;
     }
 
     // Simulamos el login según el username
     let role: 'estudiante' | 'profesor' | 'admin' = 'estudiante';
-    
-    if (this.username.toLowerCase().includes('admin') || this.username.toLowerCase().includes('administrador')) {
+
+    if (
+      this.username.toLowerCase().includes('admin') ||
+      this.username.toLowerCase().includes('administrador')
+    ) {
       role = 'admin';
-    } else if (this.username.toLowerCase().includes('profesor') || this.username.toLowerCase().includes('docente')) {
+    } else if (
+      this.username.toLowerCase().includes('profesor') ||
+      this.username.toLowerCase().includes('docente')
+    ) {
       role = 'profesor';
     }
 
@@ -54,9 +50,14 @@ export class LoginPage implements OnInit {
     this.router.navigate(['/home']);
   }
 
+  // Función para el botón de registrarse
+  irARegistro() {
+    this.router.navigate(['/registro']);
+  }
+
   quickLogin(role: 'estudiante' | 'profesor' | 'admin') {
     // Asignar un username según el rol para la simulación
-    switch(role) {
+    switch (role) {
       case 'admin':
         this.username = 'admin@sistema.com';
         break;
@@ -68,7 +69,7 @@ export class LoginPage implements OnInit {
         break;
     }
     this.password = 'password123';
-    
+
     this.authService.switchRole(role);
     this.router.navigate(['/home']);
   }
