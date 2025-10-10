@@ -1,9 +1,22 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title> Sistema de Notas Seguras </ion-title>
+    <ion-title>Sistema de Notas Seguras</ion-title>
     <ion-buttons slot="end">
-      <ion-button fill="clear" color="light">
-        <ion-icon name="log-out-outline"></ion-icon>
+      <!-- Selector de roles -->
+      <ion-select
+        [value]="user?.role"
+        (ionChange)="switchRole($event)"
+        placeholder="Seleccionar Rol"
+        interface="action-sheet"
+        class="role-selector"
+      >
+        <ion-select-option value="estudiante">Estudiante</ion-select-option>
+        <ion-select-option value="profesor">Profesor</ion-select-option>
+        <ion-select-option value="admin">Administrador</ion-select-option>
+      </ion-select>
+
+      <ion-button fill="clear" color="light" (click)="logout()">
+        <ion-icon name="log-out-outline" slot="start"></ion-icon>
         Cerrar sesión
       </ion-button>
     </ion-buttons>
@@ -12,49 +25,109 @@
 
 <ion-content class="home-container ion-padding">
   <div class="welcome-section">
-    <h2>Bienvenido 👋</h2>
+    <h2>Bienvenido a Notas Seguras 👋</h2>
+    <div class="user-welcome">{{user?.nombre}}</div>
+    <ion-badge [color]="getRoleColor()" class="role-badge">
+      {{user?.role | uppercase}}
+    </ion-badge>
     <p>Selecciona un módulo para gestionar la información:</p>
   </div>
 
   <div class="menu-grid">
-    <ion-card button [routerLink]="['/usuarios']">
+    <!-- SOLO PARA ADMIN -->
+    <ion-card
+      button
+      [routerLink]="['/usuarios']"
+      *ngIf="user?.role === 'admin'"
+      class="feature-card"
+    >
       <ion-card-header>
-        <ion-icon name="people" class="icono"></ion-icon>
+        <ion-icon name="people" class="icono admin"></ion-icon>
         <ion-card-title>Usuarios</ion-card-title>
       </ion-card-header>
       <ion-card-content>Gestión de cuentas y roles</ion-card-content>
     </ion-card>
 
-    <ion-card button [routerLink]="['/estudiantes']">
+    <!-- PARA PROFESOR Y ADMIN -->
+    <ion-card
+      button
+      [routerLink]="['/estudiantes']"
+      *ngIf="user?.role === 'profesor' || user?.role === 'admin'"
+      class="feature-card"
+    >
       <ion-card-header>
-        <ion-icon name="school" class="icono"></ion-icon>
+        <ion-icon name="school" class="icono profesor"></ion-icon>
         <ion-card-title>Estudiantes</ion-card-title>
       </ion-card-header>
       <ion-card-content>Registro y edición de estudiantes</ion-card-content>
     </ion-card>
 
-    <ion-card button [routerLink]="['/notas']">
+    <!-- PARA PROFESOR Y ADMIN -->
+    <ion-card
+      button
+      [routerLink]="['/notas']"
+      *ngIf="user?.role === 'profesor' || user?.role === 'admin'"
+      class="feature-card"
+    >
       <ion-card-header>
-        <ion-icon name="document-text" class="icono"></ion-icon>
+        <ion-icon name="document-text" class="icono profesor"></ion-icon>
         <ion-card-title>Notas</ion-card-title>
       </ion-card-header>
       <ion-card-content>Gestión de calificaciones</ion-card-content>
     </ion-card>
 
-    <ion-card button [routerLink]="['/mis-notas']">
+    <!-- SOLO PARA ESTUDIANTES -->
+    <ion-card
+      button
+      [routerLink]="['/mis-notas']"
+      *ngIf="user?.role === 'estudiante'"
+      class="feature-card"
+    >
       <ion-card-header>
-        <ion-icon name="bar-chart" class="icono"></ion-icon>
+        <ion-icon name="bar-chart" class="icono estudiante"></ion-icon>
         <ion-card-title>Mis Notas</ion-card-title>
       </ion-card-header>
       <ion-card-content>Consulta de calificaciones</ion-card-content>
     </ion-card>
 
-    <ion-card button [routerLink]="['/auditoria']">
+    <!-- SOLO PARA ADMIN -->
+    <ion-card
+      button
+      [routerLink]="['/auditoria']"
+      *ngIf="user?.role === 'admin'"
+      class="feature-card"
+    >
       <ion-card-header>
-        <ion-icon name="clipboard" class="icono"></ion-icon>
+        <ion-icon name="clipboard" class="icono admin"></ion-icon>
         <ion-card-title>Auditoría</ion-card-title>
       </ion-card-header>
       <ion-card-content>Historial de acciones del sistema</ion-card-content>
+    </ion-card>
+
+    <!-- Mensaje si no hay opciones disponibles -->
+    <div *ngIf="!hasAvailableOptions()" class="no-options">
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-icon name="information-circle" class="icono info"></ion-icon>
+          <ion-card-title>Sin opciones disponibles</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          No tienes permisos para acceder a las opciones del sistema con tu rol
+          actual.
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+
+  <!-- Información de debug (opcional) -->
+  <div class="debug-info" *ngIf="user">
+    <ion-card color="light">
+      <ion-card-content>
+        <small
+          ><strong>DEBUG:</strong> Rol actual: {{user.role}} | Usuario:
+          {{user.nombre}}</small
+        >
+      </ion-card-content>
     </ion-card>
   </div>
 </ion-content>

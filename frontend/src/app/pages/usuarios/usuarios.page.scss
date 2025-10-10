@@ -1,0 +1,178 @@
+/* Estilos específicos para la página de Usuarios */
+
+.admin-card {
+  margin-bottom: 1.5rem;
+
+  ion-card-header {
+    padding-bottom: 0.5rem;
+  }
+
+  ion-card-content {
+    p {
+      margin: 0.5rem 0;
+      color: var(--ion-color-dark);
+    }
+  }
+}
+
+.stats-grid {
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  margin: 0.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.stats-content {
+  text-align: center;
+  padding: 1.5rem 1rem;
+
+  .stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+  }
+
+  h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+    color: var(--ion-color-dark);
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+}
+
+.users-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+  ion-card-header {
+    padding-bottom: 0;
+
+    ion-card-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--ion-color-dark);
+    }
+
+    ion-card-subtitle {
+      color: var(--ion-color-medium);
+      font-size: 0.95rem;
+    }
+  }
+}
+
+.users-list {
+  background: transparent;
+  padding: 0;
+}
+
+.user-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --background: transparent;
+  margin: 0.5rem 0;
+
+  .user-avatar {
+    width: 50px;
+    height: 50px;
+    margin-right: 1rem;
+    background: var(--ion-color-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .avatar-icon {
+      font-size: 1.5rem;
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+.user-info {
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    margin-bottom: 0.25rem;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin: 0.1rem 0;
+    font-size: 0.9rem;
+  }
+
+  .last-access {
+    font-size: 0.8rem;
+    color: var(--ion-color-medium-shade);
+  }
+}
+
+.role-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.user-options {
+  ion-item-option {
+    padding: 0 1rem;
+
+    ion-icon {
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--ion-color-medium);
+
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
+  }
+
+  h3 {
+    color: var(--ion-color-medium-shade);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-content {
+    padding: 1rem 0.5rem;
+
+    h2 {
+      font-size: 1.8rem;
+    }
+  }
+
+  .user-item {
+    .user-avatar {
+      width: 45px;
+      height: 45px;
+      margin-right: 0.75rem;
+    }
+  }
+}

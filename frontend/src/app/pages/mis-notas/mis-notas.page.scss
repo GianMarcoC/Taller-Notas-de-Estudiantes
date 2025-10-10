@@ -1,0 +1,36 @@
+ion-content {
+  --background: #f5f7fa;
+  padding: 1rem;
+}
+
+/* Card de nota */
+ion-card {
+  border-radius: var(--card-radius);
+  box-shadow: 0 3px 8px rgba(208, 176, 176, 0.06);
+  margin-bottom: 1rem;
+}
+
+/* Cabecera */
+ion-card-header {
+  background-color: var(--ion-color-primary);
+  color: #fff;
+  border-top-left-radius: var(--card-radius);
+  border-top-right-radius: var(--card-radius);
+}
+
+ion-card-title {
+  font-weight: 600;
+}
+
+ion-card-content {
+  text-align: center;
+}
+
+/* Promedio general */
+.promedio {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--ion-color-secondary);
+  text-align: center;
+  margin-top: 1rem;
+}

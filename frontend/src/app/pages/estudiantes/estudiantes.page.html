@@ -4,30 +4,63 @@
       <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
     <ion-title>Gestión de Estudiantes</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="nuevoEstudiante()">
+        <ion-icon slot="icon-only" name="person-add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-button color="success" expand="block"
-    >➕ Registrar Estudiante</ion-button
-  >
+  <!-- Información del usuario -->
+  <ion-card *ngIf="user" color="light">
+    <ion-card-content>
+      <strong>Rol:</strong> {{user.role | uppercase}} -
+      <strong>Usuario:</strong> {{user.nombre}}
+    </ion-card-content>
+  </ion-card>
 
-  <ion-grid>
-    <ion-row>
-      <ion-col><b>Nombre</b></ion-col>
-      <ion-col><b>Código</b></ion-col>
-      <ion-col><b>Carrera</b></ion-col>
-      <ion-col><b>Acciones</b></ion-col>
-    </ion-row>
+  <!-- Lista de estudiantes -->
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Lista de Estudiantes</ion-label>
+      <ion-badge color="primary">{{estudiantes.length}} estudiantes</ion-badge>
+    </ion-list-header>
 
-    <ion-row *ngFor="let est of estudiantes">
-      <ion-col>{{est.nombre}}</ion-col>
-      <ion-col>{{est.codigo}}</ion-col>
-      <ion-col>{{est.carrera}}</ion-col>
-      <ion-col>
-        <ion-button color="tertiary" size="small">✏️</ion-button>
-        <ion-button color="danger" size="small">🗑️</ion-button>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+    <ion-item-sliding *ngFor="let estudiante of estudiantes">
+      <ion-item>
+        <ion-avatar slot="start">
+          <ion-icon name="person-circle" size="large"></ion-icon>
+        </ion-avatar>
+        <ion-label>
+          <h2>{{estudiante.nombre}}</h2>
+          <p>Código: {{estudiante.codigo}} | Curso: {{estudiante.curso}}</p>
+          <p>Promedio: <strong>{{estudiante.promedio}}</strong></p>
+        </ion-label>
+        <ion-badge [color]="getEstadoColor(estudiante.estado)" slot="end">
+          {{estudiante.estado}}
+        </ion-badge>
+      </ion-item>
+
+      <ion-item-options side="end">
+        <ion-item-option color="primary" (click)="editarEstudiante(estudiante)">
+          <ion-icon slot="icon-only" name="create"></ion-icon>
+        </ion-item-option>
+        <ion-item-option
+          color="danger"
+          (click)="eliminarEstudiante(estudiante)"
+        >
+          <ion-icon slot="icon-only" name="trash"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <!-- Mensaje si no hay estudiantes -->
+  <div *ngIf="estudiantes.length === 0" class="empty-state">
+    <ion-icon name="school-outline" size="large"></ion-icon>
+    <h3>No hay estudiantes registrados</h3>
+    <p>Agrega el primer estudiante usando el botón "+"</p>
+  </div>
 </ion-content>

@@ -1,29 +1,75 @@
-<ion-content class="login-container">
-  <div class="login-box">
-    <img
-      src="assets/logo-universidad.png"
-      alt="Logo Universidad"
-      class="logo"
-    />
-
+<ion-content class="ion-padding">
+  <div class="login-container">
     <h2>Ingreso al Sistema</h2>
 
+    <!-- Formulario de login -->
     <ion-item>
-      <ion-label position="floating">Correo o Usuario</ion-label>
-      <ion-input [(ngModel)]="usuario" type="text" required></ion-input>
+      <ion-label position="stacked">Correo o Usuario</ion-label>
+      <ion-input
+        [(ngModel)]="username"
+        placeholder="Ingresa tu usuario"
+        type="text"
+      >
+      </ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-label position="floating">Contraseña</ion-label>
-      <ion-input [(ngModel)]="password" type="password" required></ion-input>
+      <ion-label position="stacked">Contraseña</ion-label>
+      <ion-input
+        [(ngModel)]="password"
+        placeholder="Ingresa tu contraseña"
+        type="password"
+      >
+      </ion-input>
     </ion-item>
 
-    <ion-button expand="block" color="primary" (click)="login()"
-      >Iniciar Sesión</ion-button
+    <ion-button
+      expand="block"
+      (click)="login()"
+      color="primary"
+      class="login-button"
     >
+      Iniciar Sesión
+    </ion-button>
 
-    <p class="intentos" *ngIf="intentos >= 3">
-      Verifica el CAPTCHA para continuar
-    </p>
+    <hr class="separator" />
+
+    <!-- Login rápido para testing -->
+    <div class="quick-login">
+      <p>O ingresa rápidamente como:</p>
+
+      <ion-button
+        expand="block"
+        (click)="quickLogin('estudiante')"
+        color="success"
+        fill="outline"
+        size="small"
+      >
+        <ion-icon name="school" slot="start"></ion-icon>
+        Estudiante
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        (click)="quickLogin('profesor')"
+        color="warning"
+        fill="outline"
+        size="small"
+      >
+        <ion-icon name="person" slot="start"></ion-icon>
+        Profesor
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        (click)="quickLogin('admin')"
+        color="danger"
+        fill="outline"
+        size="small"
+      >
+        <ion-icon name="shield" slot="start"></ion-icon>
+        Administrador
+      </ion-button>
+    </div>
   </div>
 </ion-content>

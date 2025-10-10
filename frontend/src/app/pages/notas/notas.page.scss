@@ -1,0 +1,80 @@
+ion-content {
+  --background: #f5f7fa;
+  padding: 1rem;
+}
+
+ion-grid {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+/* Encabezado */
+ion-row.header {
+  background-color: var(--ion-color-primary);
+  color: #fff;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Celdas */
+ion-col {
+  font-size: 0.95rem;
+  padding: 10px;
+  color: #1e293b;
+}
+
+/* Botones CRUD */
+ion-button {
+  --border-radius: 8px;
+  margin: 0 4px;
+}
+
+ion-button.add {
+  --background: var(--ion-color-secondary);
+  --color: #fff;
+}
+
+ion-button.edit {
+  --background: var(--ion-color-tertiary);
+  --color: #1e293b;
+}
+
+ion-button.delete {
+  --background: var(--ion-color-danger);
+  --color: #fff;
+}
+
+.stats-card {
+  text-align: center;
+
+  ion-icon {
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-size: 2rem;
+    margin: 10px 0;
+  }
+
+  p {
+    margin: 0;
+    color: var(--ion-color-medium);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+
+  ion-icon {
+    color: var(--ion-color-medium);
+    margin-bottom: 20px;
+  }
+
+  h3 {
+    color: var(--ion-color-medium);
+    margin-bottom: 10px;
+  }
+}

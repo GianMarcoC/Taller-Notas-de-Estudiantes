@@ -4,30 +4,123 @@
       <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
     <ion-title>Gestión de Usuarios</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="nuevoUsuario()">
+        <ion-icon slot="icon-only" name="person-add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-button color="success" expand="block">➕ Crear Usuario</ion-button>
+  <!-- Información del admin -->
+  <ion-card color="danger" class="admin-card">
+    <ion-card-header>
+      <ion-card-title>🔐 Panel de Administración</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p><strong>Usuario:</strong> {{user?.nombre}}</p>
+      <p><strong>Rol:</strong> {{user?.role | uppercase}}</p>
+      <p><strong>Email:</strong> {{user?.username}}</p>
+    </ion-card-content>
+  </ion-card>
 
-  <ion-grid>
+  <!-- Estadísticas -->
+  <ion-grid class="stats-grid">
     <ion-row>
-      <ion-col><b>ID</b></ion-col>
-      <ion-col><b>Nombre</b></ion-col>
-      <ion-col><b>Email</b></ion-col>
-      <ion-col><b>Rol</b></ion-col>
-      <ion-col><b>Acciones</b></ion-col>
-    </ion-row>
-
-    <ion-row *ngFor="let user of users">
-      <ion-col>{{user.id}}</ion-col>
-      <ion-col>{{user.nombre}}</ion-col>
-      <ion-col>{{user.email}}</ion-col>
-      <ion-col>{{user.rol}}</ion-col>
-      <ion-col>
-        <ion-button color="tertiary" size="small">✏️</ion-button>
-        <ion-button color="danger" size="small">🗑️</ion-button>
+      <ion-col size="6" size-md="3">
+        <ion-card color="primary" class="stat-card">
+          <ion-card-content class="stats-content">
+            <ion-icon name="people" class="stat-icon"></ion-icon>
+            <h2>{{contarUsuarios()}}</h2>
+            <p>Total Usuarios</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="6" size-md="3">
+        <ion-card color="success" class="stat-card">
+          <ion-card-content class="stats-content">
+            <ion-icon name="school" class="stat-icon"></ion-icon>
+            <h2>{{contarPorRol('estudiante')}}</h2>
+            <p>Estudiantes</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="6" size-md="3">
+        <ion-card color="warning" class="stat-card">
+          <ion-card-content class="stats-content">
+            <ion-icon name="person" class="stat-icon"></ion-icon>
+            <h2>{{contarPorRol('profesor')}}</h2>
+            <p>Profesores</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="6" size-md="3">
+        <ion-card color="danger" class="stat-card">
+          <ion-card-content class="stats-content">
+            <ion-icon name="shield" class="stat-icon"></ion-icon>
+            <h2>{{contarPorRol('admin')}}</h2>
+            <p>Administradores</p>
+          </ion-card-content>
+        </ion-card>
       </ion-col>
     </ion-row>
   </ion-grid>
+
+  <!-- Lista de usuarios -->
+  <ion-card class="users-card">
+    <ion-card-header>
+      <ion-card-title>👥 Usuarios del Sistema</ion-card-title>
+      <ion-card-subtitle
+        >Gestión completa de usuarios y permisos</ion-card-subtitle
+      >
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-list lines="full" class="users-list">
+        <ion-item-sliding *ngFor="let usuario of usuarios">
+          <ion-item class="user-item">
+            <ion-avatar slot="start" class="user-avatar">
+              <ion-icon
+                [name]="getIconoPorRol(usuario.role)"
+                class="avatar-icon"
+              ></ion-icon>
+            </ion-avatar>
+
+            <ion-label class="user-info">
+              <h2>{{usuario.nombre}}</h2>
+              <p>{{usuario.email}}</p>
+              <p class="last-access">Último acceso: {{usuario.ultimoAcceso}}</p>
+            </ion-label>
+
+            <ion-badge
+              [color]="getColorPorRol(usuario.role)"
+              slot="end"
+              class="role-badge"
+            >
+              {{usuario.role | uppercase}}
+            </ion-badge>
+          </ion-item>
+
+          <ion-item-options side="end" class="user-options">
+            <ion-item-option color="primary" (click)="editarUsuario(usuario)">
+              <ion-icon slot="icon-only" name="create"></ion-icon>
+              Editar
+            </ion-item-option>
+            <ion-item-option color="danger" (click)="eliminarUsuario(usuario)">
+              <ion-icon slot="icon-only" name="trash"></ion-icon>
+              Eliminar
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      </ion-list>
+
+      <!-- Mensaje si no hay usuarios -->
+      <div *ngIf="usuarios.length === 0" class="empty-state">
+        <ion-icon name="people-outline" class="empty-icon"></ion-icon>
+        <h3>No hay usuarios registrados</h3>
+        <p>Agrega el primer usuario usando el botón "+"</p>
+      </div>
+    </ion-card-content>
+  </ion-card>
 </ion-content>
