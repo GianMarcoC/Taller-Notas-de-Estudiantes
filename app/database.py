@@ -4,13 +4,16 @@ from mysql.connector import Error
 def get_db_connection():
     try:
         connection = mysql.connector.connect(
-            host='localhost',
+            host='sistema-notas-db.ctmika2a025d.us-east-2.rds.amazonaws.com',  # Tu Endpoint de AWS
             database='sistema_notas',
-            user='root',  # Cambia si usas otro usuario
-            password='GoMyGCRTES12*'   # Coloca tu password de MySQL
+            user='admin',                    # Tu Master username
+            password='GoMyGCRTES12*',      # Tu Master password
+            port=3306,
+            auth_plugin='mysql_native_password'
         )
         if connection.is_connected():
+            print("✅ Conexión a AWS RDS MySQL exitosa")
             return connection
     except Error as e:
-        print(f"Error connecting to MySQL: {e}")
+        print(f"❌ Error conectando a AWS RDS: {e}")
         return None
