@@ -1,91 +1,177 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home"></ion-back-button>
+      <ion-back-button defaultHref="/home" text="Inicio"></ion-back-button>
     </ion-buttons>
-    <ion-title>Gestión de Notas</ion-title>
+    <ion-title>Gestión de Calificaciones</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="agregarNota()">
-        <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+      <ion-button (click)="agregarNota()" fill="solid" color="success">
+        <ion-icon slot="start" name="add-circle"></ion-icon>
+        Nueva Calificación
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <!-- Información del usuario -->
-  <ion-card *ngIf="user" color="light">
+  <!-- Información del profesor -->
+  <ion-card color="light" class="info-card">
     <ion-card-content>
-      <strong>Rol:</strong> {{user.role | uppercase}} -
-      <strong>Usuario:</strong> {{user.nombre}}
+      <ion-grid>
+        <ion-row>
+          <ion-col size="8">
+            <strong>Profesor:</strong> {{user?.nombre}}<br />
+            <strong>Rol:</strong> {{user?.role | uppercase}}
+          </ion-col>
+          <ion-col size="4" class="ion-text-end">
+            <ion-badge color="primary"
+              >{{getTotalRegistros()}} calificaciones</ion-badge
+            >
+          </ion-col>
+        </ion-row>
+      </ion-grid>
     </ion-card-content>
   </ion-card>
 
-  <!-- Filtros -->
+  <!-- Filtros y Estadísticas -->
   <ion-card>
     <ion-card-header>
-      <ion-card-title>Filtros</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-item>
-        <ion-label>Curso:</ion-label>
-        <ion-select [(ngModel)]="cursoFiltro" (ionChange)="filtrarNotas()">
-          <ion-select-option value="">Todos los cursos</ion-select-option>
-          <ion-select-option value="Matemáticas">Matemáticas</ion-select-option>
-          <ion-select-option value="Física">Física</ion-select-option>
-          <ion-select-option value="Química">Química</ion-select-option>
-          <ion-select-option value="Programación"
-            >Programación</ion-select-option
-          >
-        </ion-select>
-      </ion-item>
-    </ion-card-content>
-  </ion-card>
-
-  <!-- Lista de notas -->
-  <ion-list>
-    <ion-list-header>
-      <ion-label>Registro de Notas</ion-label>
-      <ion-badge color="primary">{{notasFiltradas.length}} registros</ion-badge>
-    </ion-list-header>
-
-    <ion-item *ngFor="let nota of notasFiltradas">
-      <ion-avatar slot="start">
-        <ion-icon name="document-text" size="large"></ion-icon>
-      </ion-avatar>
-      <ion-label>
-        <h2>{{nota.estudiante}}</h2>
-        <p>Curso: {{nota.curso}} | Evaluación: {{nota.evaluacion}}</p>
-        <p>Fecha: {{nota.fecha}}</p>
-      </ion-label>
-      <ion-badge [color]="getNotaColor(nota.nota)" slot="end">
-        {{nota.nota}}
-      </ion-badge>
-    </ion-item>
-  </ion-list>
-
-  <!-- Estadísticas -->
-  <ion-card *ngIf="user?.role === 'admin'">
-    <ion-card-header>
-      <ion-card-title>Estadísticas (Solo Admin)</ion-card-title>
+      <ion-card-title>Filtros y Estadísticas</ion-card-title>
     </ion-card-header>
     <ion-card-content>
       <ion-grid>
         <ion-row>
-          <ion-col size="6">
-            <ion-text color="primary">
-              <h3>Promedio General</h3>
-              <h2>{{calcularPromedio()}}</h2>
-            </ion-text>
+          <ion-col size="12" size-md="6">
+            <ion-item>
+              <ion-label position="stacked">Filtrar por Curso</ion-label>
+              <ion-select
+                [(ngModel)]="cursoFiltro"
+                (ionChange)="filtrarNotas()"
+                interface="action-sheet"
+              >
+                <ion-select-option value="">Todos los cursos</ion-select-option>
+                <ion-select-option
+                  *ngFor="let curso of cursos"
+                  [value]="curso.id"
+                >
+                  {{curso.nombre}}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
           </ion-col>
-          <ion-col size="6">
-            <ion-text color="success">
-              <h3>Notas Altas</h3>
-              <h2>{{contarNotasAltas()}}</h2>
-            </ion-text>
+          <ion-col size="12" size-md="6">
+            <ion-grid>
+              <ion-row>
+                <ion-col size="6">
+                  <div class="stat-card">
+                    <ion-text color="primary">
+                      <div class="stat-value">{{calcularPromedio()}}</div>
+                      <div class="stat-label">Promedio</div>
+                    </ion-text>
+                  </div>
+                </ion-col>
+                <ion-col size="6">
+                  <div class="stat-card">
+                    <ion-text color="success">
+                      <div class="stat-value">{{contarNotasAltas()}}</div>
+                      <div class="stat-label">Notas ≥ 7.0</div>
+                    </ion-text>
+                  </div>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
           </ion-col>
         </ion-row>
       </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Lista de calificaciones -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Registro de Calificaciones</ion-card-title>
+      <ion-card-subtitle
+        >Desliza hacia la izquierda para ver opciones</ion-card-subtitle
+      >
+    </ion-card-header>
+    <ion-card-content class="ion-no-padding">
+      <ion-list lines="full">
+        <ion-item-sliding
+          *ngFor="let nota of notasFiltradas; trackBy: trackByNotaId"
+        >
+          <!-- CONTENIDO VISIBLE -->
+          <ion-item detail="false" class="grade-item">
+            <ion-avatar slot="start" class="student-avatar">
+              <div
+                class="avatar-content"
+                [ngClass]="getNotaColor(nota.calificacion)"
+              >
+                {{nota.calificacion}}
+              </div>
+            </ion-avatar>
+
+            <ion-label class="nota-info">
+              <h2>{{nota.estudianteNombre}}</h2>
+              <p>
+                <ion-icon name="book" size="small"></ion-icon>
+                {{nota.cursoNombre}}
+              </p>
+              <p>
+                <ion-icon name="document" size="small"></ion-icon>
+                {{nota.tipoEvaluacion}}
+              </p>
+              <p>
+                <ion-icon name="calendar" size="small"></ion-icon>
+                {{formatearFecha(nota.fecha)}}
+              </p>
+              <p *ngIf="nota.observaciones" class="observaciones">
+                <ion-icon name="chatbubble" size="small"></ion-icon>
+                {{nota.observaciones}}
+              </p>
+            </ion-label>
+
+            <div slot="end" class="nota-badge">
+              <ion-badge
+                [color]="getNotaColor(nota.calificacion)"
+                class="calificacion-badge"
+              >
+                {{nota.calificacion}}
+              </ion-badge>
+              <div class="nota-texto">{{getNotaTexto(nota.calificacion)}}</div>
+            </div>
+          </ion-item>
+
+          <!-- BOTONES DE ACCIÓN - DESLIZAR -->
+          <ion-item-options side="end">
+            <ion-item-option color="primary" (click)="editarNota(nota)">
+              <ion-icon name="create" slot="start"></ion-icon>
+              Editar
+            </ion-item-option>
+            <ion-item-option color="danger" (click)="eliminarNota(nota)">
+              <ion-icon name="trash" slot="start"></ion-icon>
+              Eliminar
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      </ion-list>
+
+      <!-- Mensaje cuando no hay notas -->
+      <div
+        *ngIf="notasFiltradas.length === 0"
+        class="empty-state ion-text-center ion-padding"
+      >
+        <ion-icon
+          name="document-outline"
+          size="large"
+          color="medium"
+        ></ion-icon>
+        <h3>No hay calificaciones registradas</h3>
+        <p>Comience agregando la primera calificación</p>
+        <ion-button (click)="agregarNota()" color="primary" size="default">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Registrar Calificación
+        </ion-button>
+      </div>
     </ion-card-content>
   </ion-card>
 </ion-content>
