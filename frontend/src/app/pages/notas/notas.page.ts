@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService, User } from '../../services/auth.service';
-import { NotasService, Nota, Curso } from '../../services/notas.service';
+import { NotasService, Nota } from '../../services/notas.service';
 import { AlertController } from '@ionic/angular';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
@@ -17,7 +17,7 @@ export class NotasPage implements OnInit {
   user: User | null = null;
   notas: Nota[] = [];
   notasFiltradas: Nota[] = [];
-  cursos: Curso[] = [];
+  cursos: any[] = [];
   cursoFiltro: string = '';
   estudiantes: any[] = [];
   tiposEvaluacion: string[] = [];
@@ -61,26 +61,7 @@ export class NotasPage implements OnInit {
   }
 
   cargarEstudiantes() {
-    this.estudiantes = [
-      { id: '1', nombre: 'Ana García', email: 'ana.garcia@colegio.edu' },
-      { id: '2', nombre: 'Carlos López', email: 'carlos.lopez@colegio.edu' },
-      {
-        id: '3',
-        nombre: 'María Rodríguez',
-        email: 'maria.rodriguez@colegio.edu',
-      },
-      { id: '4', nombre: 'Juan Pérez', email: 'juan.perez@colegio.edu' },
-      {
-        id: '5',
-        nombre: 'Laura Martínez',
-        email: 'laura.martinez@colegio.edu',
-      },
-      {
-        id: '6',
-        nombre: 'David Hernández',
-        email: 'david.hernandez@colegio.edu',
-      },
-    ];
+    this.estudiantes = this.notasService.obtenerEstudiantes();
   }
 
   filtrarNotas() {
@@ -93,7 +74,6 @@ export class NotasPage implements OnInit {
     }
   }
 
-  // ✅ FUNCIÓN CORREGIDA - Ahora acepta Date | undefined
   formatearFecha(fecha: Date | undefined | null): string {
     if (!fecha) {
       return 'Fecha no disponible';
@@ -126,29 +106,24 @@ export class NotasPage implements OnInit {
 
   async agregarNota() {
     const alert = await this.alertController.create({
-      header: '📚 Registrar Calificación',
+      header: 'Registrar Nueva Calificación',
       cssClass: 'formulario-calificacion',
       inputs: [
         {
-          name: 'estudianteNombre',
-          type: 'text',
-          placeholder: 'Nombre del estudiante',
+          name: 'estudiante_id',
+          type: 'number',
+          placeholder: 'ID del estudiante (1 para María García)',
+          value: '1',
           attributes: {
             required: 'true',
+            min: '1',
+            max: '1',
           },
         },
         {
           name: 'asignatura',
           type: 'text',
-          placeholder: 'Materia/Asignatura',
-          attributes: {
-            required: 'true',
-          },
-        },
-        {
-          name: 'tipoEvaluacion',
-          type: 'text',
-          placeholder: 'Tipo de evaluación',
+          placeholder: 'Materia/Asignatura (ej: Matemáticas, Programación)',
           attributes: {
             required: 'true',
           },
@@ -167,16 +142,11 @@ export class NotasPage implements OnInit {
         {
           name: 'periodo',
           type: 'text',
-          placeholder: 'Periodo académico (ej: 2024-2)',
+          placeholder: 'Periodo académico',
           value: '2024-2',
           attributes: {
             required: 'true',
           },
-        },
-        {
-          name: 'observaciones',
-          type: 'textarea',
-          placeholder: 'Observaciones o comentarios (opcional)',
         },
       ],
       buttons: [
@@ -190,37 +160,39 @@ export class NotasPage implements OnInit {
           cssClass: 'btn-guardar',
           handler: (data) => {
             if (
-              data.estudianteNombre &&
+              data.estudiante_id &&
               data.asignatura &&
-              data.tipoEvaluacion &&
               data.calificacion &&
               data.periodo
             ) {
               const nuevaNota: Nota = {
-                estudiante_id: this.generarIdEstudiante(data.estudianteNombre),
-                estudianteNombre: data.estudianteNombre,
+                estudiante_id: parseInt(data.estudiante_id),
                 asignatura: data.asignatura,
-                cursoNombre: data.asignatura,
-                cursoId: this.obtenerCursoId(data.asignatura),
-                tipoEvaluacion: data.tipoEvaluacion,
                 calificacion: parseFloat(data.calificacion),
                 periodo: data.periodo,
-                fecha: new Date(),
-                observaciones: data.observaciones || '',
               };
 
-              this.notasService.agregarNota(nuevaNota).subscribe(() => {
-                this.mostrarMensaje(
-                  '✅ Éxito',
-                  'Calificación registrada correctamente'
-                );
-                this.cargarNotas();
+              this.notasService.agregarNota(nuevaNota).subscribe({
+                next: () => {
+                  this.mostrarMensaje(
+                    '✅ Éxito',
+                    'Calificación registrada correctamente'
+                  );
+                  this.cargarNotas();
+                },
+                error: (error) => {
+                  this.mostrarMensaje(
+                    '❌ Error',
+                    'Error al registrar la calificación'
+                  );
+                  console.error('Error:', error);
+                },
               });
               return true;
             }
             this.mostrarMensaje(
-              '❌ Error',
-              'Por favor complete todos los campos requeridos'
+              '⚠️ Atención',
+              'Complete todos los campos requeridos'
             );
             return false;
           },
@@ -231,32 +203,6 @@ export class NotasPage implements OnInit {
     await alert.present();
   }
 
-  // Método auxiliar para generar ID de estudiante
-  private generarIdEstudiante(nombre: string): string {
-    return nombre.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
-  }
-
-  // Método auxiliar para obtener cursoId
-  private obtenerCursoId(asignatura: string): string {
-    const mapeo: { [key: string]: string } = {
-      matemáticas: '1',
-      lengua: '2',
-      ciencias: '3',
-      sociales: '4',
-      inglés: '5',
-      física: '9',
-      química: '10',
-      biología: '11',
-    };
-
-    const asignaturaLower = asignatura.toLowerCase();
-    for (const key in mapeo) {
-      if (asignaturaLower.includes(key)) {
-        return mapeo[key];
-      }
-    }
-    return '1';
-  }
   async editarNota(nota: Nota) {
     const alert = await this.alertController.create({
       header: 'Editar Calificación',
@@ -275,12 +221,6 @@ export class NotasPage implements OnInit {
           },
         },
         {
-          name: 'tipoEvaluacion',
-          type: 'text',
-          value: nota.tipoEvaluacion,
-          placeholder: 'Tipo de evaluación',
-        },
-        {
           name: 'observaciones',
           type: 'textarea',
           value: nota.observaciones || '',
@@ -295,11 +235,10 @@ export class NotasPage implements OnInit {
         {
           text: 'Actualizar',
           handler: (data) => {
-            if (data.calificacion && data.tipoEvaluacion) {
+            if (data.calificacion) {
               const notaActualizada: Nota = {
                 ...nota,
                 calificacion: parseFloat(data.calificacion),
-                tipoEvaluacion: data.tipoEvaluacion,
                 observaciones: data.observaciones || '',
                 fecha: new Date(),
               };
@@ -332,7 +271,6 @@ export class NotasPage implements OnInit {
       }</strong>?<br><br>
                <strong>Detalles:</strong><br>
                • Curso: ${nota.cursoNombre}<br>
-               • Evaluación: ${nota.tipoEvaluacion}<br>
                • Calificación: ${nota.calificacion}<br>
                • Fecha: ${this.formatearFecha(nota.fecha)}`,
       buttons: [

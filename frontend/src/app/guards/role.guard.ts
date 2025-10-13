@@ -16,8 +16,12 @@ export class RoleGuard implements CanActivate {
       return false;
     }
 
-    if (!this.authService.hasAnyRole(expectedRoles)) {
-      // Redirigir a home si no tiene permisos
+    // Check if user has any of the expected roles
+    const hasRequiredRole = expectedRoles.some(role => 
+      this.authService.hasRole(role)
+    );
+
+    if (!hasRequiredRole) {
       this.router.navigate(['/home']);
       return false;
     }
