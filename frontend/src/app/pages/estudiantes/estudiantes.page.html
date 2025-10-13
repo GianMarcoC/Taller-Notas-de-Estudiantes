@@ -13,11 +13,11 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <!-- Información del usuario -->
+  <!-- Información del usuario actual -->
   <ion-card *ngIf="user" color="light">
     <ion-card-content>
-      <strong>Rol:</strong> {{user.role | uppercase}} -
-      <strong>Usuario:</strong> {{user.nombre}}
+      <strong>Rol:</strong> {{user.role | uppercase}} <br />
+      <strong>Usuario:</strong> {{user.nombre || user.email}}
     </ion-card-content>
   </ion-card>
 
@@ -35,9 +35,18 @@
         </ion-avatar>
         <ion-label>
           <h2>{{estudiante.nombre}}</h2>
-          <p>Código: {{estudiante.codigo}} | Curso: {{estudiante.curso}}</p>
-          <p>Promedio: <strong>{{estudiante.promedio}}</strong></p>
+          <p>
+            Código: {{estudiante.codigo_estudiante}} | Curso:
+            {{estudiante.curso}}
+          </p>
+          <p>
+            Promedio:
+            <strong [style.color]="estudiante.promedio >= 3 ? 'green' : 'red'">
+              {{estudiante.promedio}}
+            </strong>
+          </p>
         </ion-label>
+
         <ion-badge [color]="getEstadoColor(estudiante.estado)" slot="end">
           {{estudiante.estado}}
         </ion-badge>
@@ -57,7 +66,7 @@
     </ion-item-sliding>
   </ion-list>
 
-  <!-- Mensaje si no hay estudiantes -->
+  <!-- Estado vacío -->
   <div *ngIf="estudiantes.length === 0" class="empty-state">
     <ion-icon name="school-outline" size="large"></ion-icon>
     <h3>No hay estudiantes registrados</h3>

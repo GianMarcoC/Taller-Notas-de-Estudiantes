@@ -18,16 +18,9 @@ export class NotasPage implements OnInit {
   notas: Nota[] = [];
   notasFiltradas: Nota[] = [];
   cursos: any[] = [];
-  cursoFiltro: string = '';
   estudiantes: any[] = [];
-  tiposEvaluacion: string[] = [];
+  asignaturaFiltro: string = '';
   busquedaEstudiante: string = '';
-  fechaActual: string = new Date().toLocaleDateString('es-ES', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
 
   constructor(
     private authService: AuthService,
@@ -44,37 +37,81 @@ export class NotasPage implements OnInit {
     this.cargarNotas();
     this.cargarCursos();
     this.cargarEstudiantes();
-    this.tiposEvaluacion = this.notasService.obtenerTiposEvaluacion();
   }
 
   cargarNotas() {
-    this.notasService.obtenerNotasProfesor().subscribe((notas) => {
-      this.notas = notas;
-      this.notasFiltradas = [...this.notas];
+    this.notasService.obtenerNotasProfesor().subscribe({
+      next: (notas) => {
+        console.log('Notas cargadas:', notas);
+        this.notas = notas;
+        this.notasFiltradas = [...this.notas];
+        // Enriquecer las notas con datos de estudiantes
+        this.enriquecerNotasConDatos();
+      },
+      error: (error) => {
+        console.error('Error cargando notas:', error);
+        this.mostrarMensaje('Error', 'No se pudieron cargar las notas');
+      },
     });
   }
 
   cargarCursos() {
-    this.notasService.obtenerCursosProfesor().subscribe((cursos) => {
-      this.cursos = cursos;
+    this.notasService.obtenerCursosProfesor().subscribe({
+      next: (cursos) => {
+        this.cursos = cursos;
+      },
+      error: (error) => {
+        console.error('Error cargando cursos:', error);
+      },
     });
   }
 
   cargarEstudiantes() {
-    this.estudiantes = this.notasService.obtenerEstudiantes();
+    this.notasService.obtenerEstudiantes().subscribe({
+      next: (estudiantes) => {
+        this.estudiantes = estudiantes;
+        // Enriquecer las notas con datos de estudiantes
+        this.enriquecerNotasConDatos();
+      },
+      error: (error) => {
+        console.error('Error cargando estudiantes:', error);
+      },
+    });
+  }
+
+  // ✅ Enriquecer las notas con datos adicionales para la vista
+  enriquecerNotasConDatos() {
+    if (this.estudiantes.length === 0 || this.notas.length === 0) return;
+
+    this.notas = this.notas.map((nota) => {
+      const estudiante = this.estudiantes.find(
+        (e) => e.id === nota.estudiante_id
+      );
+      return {
+        ...nota,
+        estudianteNombre: estudiante
+          ? estudiante.nombre
+          : `Estudiante ${nota.estudiante_id}`,
+        cursoNombre: nota.asignatura,
+        cursoId: nota.asignatura,
+        fecha: nota.creado_en ? new Date(nota.creado_en) : new Date(),
+        tipoEvaluacion: 'Examen',
+      };
+    });
+    this.notasFiltradas = [...this.notas];
   }
 
   filtrarNotas() {
-    if (this.cursoFiltro) {
+    if (this.asignaturaFiltro) {
       this.notasFiltradas = this.notas.filter(
-        (nota) => nota.cursoId === this.cursoFiltro
+        (nota) => nota.asignatura === this.asignaturaFiltro
       );
     } else {
       this.notasFiltradas = [...this.notas];
     }
   }
 
-  formatearFecha(fecha: Date | undefined | null): string {
+  formatearFecha(fecha: Date | string | undefined | null): string {
     if (!fecha) {
       return 'Fecha no disponible';
     }
@@ -98,181 +135,218 @@ export class NotasPage implements OnInit {
   }
 
   getNotaTexto(nota: number): string {
-    if (nota >= 9.0) return 'Excelente';
-    if (nota >= 7.0) return 'Bueno';
-    if (nota >= 6.0) return 'Aprobado';
+    // Escala 0-5
+    if (nota >= 4.5) return 'Excelente';
+    if (nota >= 4.0) return 'Muy Bueno';
+    if (nota >= 3.5) return 'Bueno';
+    if (nota >= 3.0) return 'Aprobado';
     return 'Reprobado';
   }
 
   async agregarNota() {
-    const alert = await this.alertController.create({
-      header: 'Registrar Nueva Calificación',
-      cssClass: 'formulario-calificacion',
-      inputs: [
-        {
-          name: 'estudiante_id',
-          type: 'number',
-          placeholder: 'ID del estudiante (1 para María García)',
-          value: '1',
-          attributes: {
-            required: 'true',
-            min: '1',
-            max: '1',
-          },
+  const alert = await this.alertController.create({
+    header: 'Registrar Nueva Calificación',
+    cssClass: 'formulario-calificacion',
+    inputs: [
+      {
+        name: 'estudiante_id',
+        type: 'number',
+        placeholder: 'ID del estudiante',
+        min: 1,
+        attributes: {
+          required: 'true',
+          pattern: '[0-9]*'
         },
-        {
-          name: 'asignatura',
-          type: 'text',
-          placeholder: 'Materia/Asignatura (ej: Matemáticas, Programación)',
-          attributes: {
-            required: 'true',
-          },
+      },
+      {
+        name: 'asignatura',
+        type: 'text',
+        placeholder: 'Materia/Asignatura',
+        attributes: {
+          required: 'true',
         },
-        {
-          name: 'calificacion',
-          type: 'number',
-          placeholder: 'Calificación (0.0 - 10.0)',
-          min: 0,
-          max: 10,
-          attributes: {
-            required: 'true',
-            step: '0.1',
-          },
+      },
+      {
+        name: 'calificacion',
+        type: 'number', // Usar type 'number' para mejor experiencia en móviles
+        placeholder: 'Calificación (0.0 - 5.0)',
+        min: 0,
+        max: 5,
+        attributes: {
+          required: 'true',
+          step: '0.1', // ✅ Correcto: dentro de attributes
+          inputmode: 'decimal' // Mejor para teclado en móviles
         },
-        {
-          name: 'periodo',
-          type: 'text',
-          placeholder: 'Periodo académico',
-          value: '2024-2',
-          attributes: {
-            required: 'true',
-          },
+      },
+      {
+        name: 'periodo',
+        type: 'text',
+        placeholder: 'Periodo (ej: 2024-2)',
+        value: '2024-2',
+        attributes: {
+          required: 'true',
+          pattern: '[0-9]{4}-[1-2]' // Validación básica de formato
         },
-      ],
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-          cssClass: 'btn-cancelar',
+      },
+      {
+        name: 'observaciones',
+        type: 'textarea',
+        placeholder: 'Observaciones (opcional)',
+        attributes: {
+          maxlength: '200'
         },
-        {
-          text: 'Guardar Calificación',
-          cssClass: 'btn-guardar',
-          handler: (data) => {
-            if (
-              data.estudiante_id &&
-              data.asignatura &&
-              data.calificacion &&
-              data.periodo
-            ) {
-              const nuevaNota: Nota = {
-                estudiante_id: parseInt(data.estudiante_id),
-                asignatura: data.asignatura,
-                calificacion: parseFloat(data.calificacion),
-                periodo: data.periodo,
-              };
+      },
+    ],
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel',
+        cssClass: 'btn-cancelar',
+      },
+      {
+        text: 'Guardar',
+        cssClass: 'btn-guardar',
+        handler: (data) => {
+          this.guardarNuevaNota(data);
+          return false;
+        },
+      },
+    ],
+  });
 
-              this.notasService.agregarNota(nuevaNota).subscribe({
-                next: () => {
-                  this.mostrarMensaje(
-                    '✅ Éxito',
-                    'Calificación registrada correctamente'
-                  );
-                  this.cargarNotas();
-                },
-                error: (error) => {
-                  this.mostrarMensaje(
-                    '❌ Error',
-                    'Error al registrar la calificación'
-                  );
-                  console.error('Error:', error);
-                },
-              });
-              return true;
-            }
-            this.mostrarMensaje(
-              '⚠️ Atención',
-              'Complete todos los campos requeridos'
-            );
-            return false;
-          },
-        },
-      ],
+  await alert.present();
+}
+
+  private async guardarNuevaNota(data: any) {
+    if (
+      !data.estudiante_id ||
+      !data.asignatura ||
+      !data.calificacion ||
+      !data.periodo
+    ) {
+      this.mostrarMensaje('Atención', 'Complete todos los campos requeridos');
+      return;
+    }
+
+    const calificacion = parseFloat(data.calificacion);
+
+    // Validar que la calificación esté entre 0 y 5
+    if (calificacion < 0 || calificacion > 5) {
+      this.mostrarMensaje('Error', 'La calificación debe estar entre 0 y 5');
+      return;
+    }
+
+    const nuevaNota: Nota = {
+      estudiante_id: parseInt(data.estudiante_id),
+      asignatura: data.asignatura,
+      calificacion: calificacion,
+      periodo: data.periodo,
+      observaciones: data.observaciones || '',
+    };
+
+    this.notasService.agregarNota(nuevaNota).subscribe({
+      next: () => {
+        this.mostrarMensaje('Éxito', 'Calificación registrada correctamente');
+        this.cargarNotas(); // Recargar la lista
+      },
+      error: (error) => {
+        console.error('Error:', error);
+        this.mostrarMensaje(
+          'Error',
+          'Error al registrar la calificación: ' + error.message
+        );
+      },
     });
-
-    await alert.present();
   }
 
-  async editarNota(nota: Nota) {
-    const alert = await this.alertController.create({
-      header: 'Editar Calificación',
-      subHeader: `Estudiante: ${nota.estudianteNombre}`,
-      inputs: [
-        {
-          name: 'calificacion',
-          type: 'number',
-          value: nota.calificacion,
-          placeholder: 'Calificación (0.0 - 10.0)',
-          min: 0,
-          max: 10,
-          attributes: {
-            required: true,
-            step: '0.1',
-          },
+ async editarNota(nota: Nota) {
+  const alert = await this.alertController.create({
+    header: 'Editar Calificación',
+    subHeader: `Estudiante: ${nota.estudianteNombre || 'N/A'}`,
+    cssClass: 'formulario-calificacion',
+    inputs: [
+      {
+        name: 'calificacion',
+        type: 'number',
+        value: nota.calificacion,
+        placeholder: 'Calificación (0.0 - 5.0)',
+        min: 0,
+        max: 5,
+        attributes: {
+          required: true,
+          step: '0.1' // ✅ DENTRO de attributes
         },
-        {
-          name: 'observaciones',
-          type: 'textarea',
-          value: nota.observaciones || '',
-          placeholder: 'Observaciones o comentarios...',
+      },
+      {
+        name: 'observaciones',
+        type: 'textarea',
+        value: nota.observaciones || '',
+        placeholder: 'Observaciones o comentarios...',
+        attributes: {
+          maxlength: '200'
         },
-      ],
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
+      },
+    ],
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel',
+        cssClass: 'btn-cancelar',
+      },
+      {
+        text: 'Actualizar',
+        cssClass: 'btn-guardar',
+        handler: (data) => {
+          this.actualizarNotaExistente(nota, data);
+          return false;
         },
-        {
-          text: 'Actualizar',
-          handler: (data) => {
-            if (data.calificacion) {
-              const notaActualizada: Nota = {
-                ...nota,
-                calificacion: parseFloat(data.calificacion),
-                observaciones: data.observaciones || '',
-                fecha: new Date(),
-              };
+      },
+    ],
+  });
 
-              this.notasService
-                .actualizarNota(nota.id!, notaActualizada)
-                .subscribe(() => {
-                  this.mostrarMensaje(
-                    'Éxito',
-                    'Calificación actualizada correctamente'
-                  );
-                  this.cargarNotas();
-                });
-              return true;
-            }
-            return false;
-          },
-        },
-      ],
+  await alert.present();
+}
+  private async actualizarNotaExistente(nota: Nota, data: any) {
+    if (!data.calificacion) {
+      this.mostrarMensaje('Error', 'La calificación es requerida');
+      return;
+    }
+
+    const calificacion = parseFloat(data.calificacion);
+
+    if (calificacion < 0 || calificacion > 5) {
+      this.mostrarMensaje('Error', 'La calificación debe estar entre 0 y 5');
+      return;
+    }
+
+    const notaActualizada: Nota = {
+      ...nota,
+      calificacion: calificacion,
+      observaciones: data.observaciones || '',
+    };
+
+    this.notasService.actualizarNota(nota.id!, notaActualizada).subscribe({
+      next: () => {
+        this.mostrarMensaje('Éxito', 'Calificación actualizada correctamente');
+        this.cargarNotas();
+      },
+      error: (error) => {
+        console.error('Error:', error);
+        this.mostrarMensaje('Error', 'Error al actualizar la calificación');
+      },
     });
-
-    await alert.present();
   }
 
   async eliminarNota(nota: Nota) {
     const alert = await this.alertController.create({
       header: 'Confirmar Eliminación',
       message: `¿Está seguro de eliminar la calificación de <strong>${
-        nota.estudianteNombre
+        nota.estudianteNombre || 'estudiante'
       }</strong>?<br><br>
                <strong>Detalles:</strong><br>
-               • Curso: ${nota.cursoNombre}<br>
+               • Asignatura: ${nota.asignatura}<br>
                • Calificación: ${nota.calificacion}<br>
-               • Fecha: ${this.formatearFecha(nota.fecha)}`,
+               • Periodo: ${nota.periodo}`,
       buttons: [
         {
           text: 'Cancelar',
@@ -283,12 +357,21 @@ export class NotasPage implements OnInit {
           text: 'Eliminar',
           role: 'destructive',
           handler: () => {
-            this.notasService.eliminarNota(nota.id!).subscribe(() => {
-              this.mostrarMensaje(
-                'Éxito',
-                'Calificación eliminada correctamente'
-              );
-              this.cargarNotas();
+            this.notasService.eliminarNota(nota.id!).subscribe({
+              next: () => {
+                this.mostrarMensaje(
+                  'Éxito',
+                  'Calificación eliminada correctamente'
+                );
+                this.cargarNotas();
+              },
+              error: (error) => {
+                console.error('Error:', error);
+                this.mostrarMensaje(
+                  'Error',
+                  'Error al eliminar la calificación'
+                );
+              },
             });
           },
         },
@@ -308,9 +391,10 @@ export class NotasPage implements OnInit {
   }
 
   getNotaColor(nota: number): string {
-    if (nota >= 9.0) return 'success';
-    if (nota >= 7.0) return 'warning';
-    if (nota >= 6.0) return 'medium';
+    // Ajustado para escala de 0-5
+    if (nota >= 4.5) return 'success';
+    if (nota >= 4.0) return 'warning';
+    if (nota >= 3.0) return 'medium';
     return 'danger';
   }
 
@@ -324,7 +408,8 @@ export class NotasPage implements OnInit {
   }
 
   contarNotasAltas(): number {
-    return this.notasFiltradas.filter((nota) => nota.calificacion >= 7.0)
+    // Ajustado para escala de 0-5 (notas altas >= 4.0)
+    return this.notasFiltradas.filter((nota) => nota.calificacion >= 4.0)
       .length;
   }
 }

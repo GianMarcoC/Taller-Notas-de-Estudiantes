@@ -7,72 +7,69 @@
   <div class="registro-form">
     <div class="form-title">Formulario de Registro</div>
 
-    <!-- Formulario de registro -->
+    <!-- Nombre -->
     <ion-item class="form-item">
       <ion-label position="stacked">Nombre Completo</ion-label>
-      <ion-input 
-        [(ngModel)]="usuario.nombre" 
+      <ion-input
+        [(ngModel)]="usuario.nombre"
         placeholder="Ingresa tu nombre completo"
-        type="text">
+        type="text"
+      >
       </ion-input>
     </ion-item>
 
+    <!-- Correo -->
     <ion-item class="form-item">
       <ion-label position="stacked">Correo Electrónico</ion-label>
-      <ion-input 
-        [(ngModel)]="usuario.email" 
+      <ion-input
+        [(ngModel)]="usuario.email"
         placeholder="Ingresa tu correo electrónico"
-        type="email">
+        type="email"
+      >
       </ion-input>
     </ion-item>
 
-    <ion-item class="form-item">
-      <ion-label position="stacked">Usuario</ion-label>
-      <ion-input 
-        [(ngModel)]="usuario.username" 
-        placeholder="Crea un nombre de usuario"
-        type="text">
-      </ion-input>
-    </ion-item>
-
+    <!-- Contraseña -->
     <ion-item class="form-item">
       <ion-label position="stacked">Contraseña</ion-label>
-      <ion-input 
-        [(ngModel)]="usuario.password" 
+      <ion-input
+        [(ngModel)]="usuario.password"
         placeholder="Crea una contraseña segura"
-        type="password">
+        type="password"
+      >
       </ion-input>
     </ion-item>
 
+    <!-- Confirmar Contraseña -->
     <ion-item class="form-item">
       <ion-label position="stacked">Confirmar Contraseña</ion-label>
-      <ion-input 
-        [(ngModel)]="usuario.confirmPassword" 
+      <ion-input
+        [(ngModel)]="usuario.confirmPassword"
         placeholder="Repite tu contraseña"
-        type="password">
+        type="password"
+      >
       </ion-input>
     </ion-item>
 
+    <!-- Tipo de Usuario (rol esperado por el backend) -->
     <ion-item class="form-item">
       <ion-label position="stacked">Tipo de Usuario</ion-label>
-      <ion-select [(ngModel)]="usuario.role" placeholder="Selecciona tu rol">
+      <ion-select [(ngModel)]="usuario.rol" placeholder="Selecciona tu rol">
         <ion-select-option value="estudiante">Estudiante</ion-select-option>
         <ion-select-option value="profesor">Profesor</ion-select-option>
+        <ion-select-option value="admin">Administrador</ion-select-option>
       </ion-select>
     </ion-item>
 
-    <ion-button 
-      expand="block" 
-      (click)="registrar()" 
-      class="registro-button">
+    <!-- Botón de registro -->
+    <ion-button expand="block" (click)="registrar()" class="registro-button">
       <ion-icon name="person-add" slot="start"></ion-icon>
       Crear Cuenta
     </ion-button>
 
+    <!-- Enlace para ir al login -->
     <div class="login-link">
-      <p>¿Ya tienes una cuenta? 
-        <a (click)="irALogin()">Inicia Sesión</a>
-      </p>
+      <p>¿Ya tienes una cuenta? <a (click)="irALogin()">Inicia Sesión</a></p>
     </div>
   </div>
 </ion-content>

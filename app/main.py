@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from app.routers import auth, usuarios, notas
+from fastapi.middleware.cors import CORSMiddleware
+from app.routers import auth, usuarios, notas, estudiantes
 
 app = FastAPI(
     title="Sistema de Notas Seguro",
@@ -7,10 +8,20 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Middleware CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Cambia "*" por la URL de tu frontend si quieres más seguridad
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Incluir routers
 app.include_router(auth.router)
 app.include_router(usuarios.router)
 app.include_router(notas.router)
+app.include_router(estudiantes.router) 
 
 @app.get("/")
 async def root():

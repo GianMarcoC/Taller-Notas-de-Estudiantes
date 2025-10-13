@@ -31,8 +31,14 @@ async def get_notas(current_user: dict = Depends(require_profesor_or_admin)):
     
     try:
         cursor.execute("""
-            SELECT n.id, n.estudiante_id, n.asignatura, n.calificacion, n.periodo, n.creado_por 
+            SELECT n.id, n.estudiante_id, n.asignatura, n.calificacion, 
+                   n.periodo, n.creado_por, n.creado_en,
+                   e.nombre as estudiante_nombre,
+                   u.nombre as creado_por_nombre
             FROM notas n
+            LEFT JOIN estudiantes e ON n.estudiante_id = e.id
+            LEFT JOIN usuarios u ON n.creado_por = u.id
+            ORDER BY n.creado_en DESC
         """)
         notas = cursor.fetchall()
         return notas

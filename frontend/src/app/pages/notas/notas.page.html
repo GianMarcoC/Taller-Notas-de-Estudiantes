@@ -4,12 +4,6 @@
       <ion-back-button defaultHref="/home" text="Inicio"></ion-back-button>
     </ion-buttons>
     <ion-title>Gestión de Calificaciones</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="agregarNota()" fill="solid" color="success">
-        <ion-icon slot="start" name="add-circle"></ion-icon>
-        Nueva Calificación
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -43,16 +37,16 @@
         <ion-row>
           <ion-col size="12" size-md="6">
             <ion-item>
-              <ion-label position="stacked">Filtrar por Curso</ion-label>
+              <ion-label position="stacked">Filtrar por Asignatura</ion-label>
               <ion-select
-                [(ngModel)]="cursoFiltro"
+                [(ngModel)]="asignaturaFiltro"
                 (ionChange)="filtrarNotas()"
                 interface="action-sheet"
               >
-                <ion-select-option value="">Todos los cursos</ion-select-option>
+                <ion-select-option value="">Todas las asignaturas</ion-select-option>
                 <ion-select-option
                   *ngFor="let curso of cursos"
-                  [value]="curso.id"
+                  [value]="curso.nombre"
                 >
                   {{curso.nombre}}
                 </ion-select-option>
@@ -74,7 +68,7 @@
                   <div class="stat-card">
                     <ion-text color="success">
                       <div class="stat-value">{{contarNotasAltas()}}</div>
-                      <div class="stat-label">Notas ≥ 7.0</div>
+                      <div class="stat-label">Notas ≥ 4.0</div>
                     </ion-text>
                   </div>
                 </ion-col>
@@ -83,6 +77,16 @@
           </ion-col>
         </ion-row>
       </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Botón para agregar nota (SOLO UN BOTÓN) -->
+  <ion-card>
+    <ion-card-content class="ion-text-center">
+      <ion-button (click)="agregarNota()" expand="block" fill="solid" color="success">
+        <ion-icon slot="start" name="add-circle"></ion-icon>
+        Nueva Calificación
+      </ion-button>
     </ion-card-content>
   </ion-card>
 
@@ -111,17 +115,17 @@
             </ion-avatar>
 
             <ion-label class="nota-info">
-              <h2>{{nota.estudianteNombre}}</h2>
+              <h2>{{nota.estudianteNombre || 'Estudiante ' + nota.estudiante_id}}</h2>
               <p>
                 <ion-icon name="book" size="small"></ion-icon>
-                {{nota.cursoNombre}}
-              </p>
-              <p>
-                <ion-icon name="document" size="small"></ion-icon>
-                {{nota.tipoEvaluacion}}
+                {{nota.asignatura}}
               </p>
               <p>
                 <ion-icon name="calendar" size="small"></ion-icon>
+                Periodo: {{nota.periodo}}
+              </p>
+              <p>
+                <ion-icon name="time" size="small"></ion-icon>
                 {{formatearFecha(nota.fecha)}}
               </p>
               <p *ngIf="nota.observaciones" class="observaciones">

@@ -3,8 +3,9 @@ from app.database import get_db_connection
 from app.models import LoginRequest, Token, UserCreate, UserResponse
 from app.security import verify_password, get_password_hash, create_access_token, get_current_user
 
-router = APIRouter(prefix="/auth", tags=["authentication"])
+router = APIRouter(prefix="/api/auth", tags=["authentication"])
 
+# ---------------------- LOGIN ----------------------
 @router.post("/login", response_model=Token)
 async def login(login_data: LoginRequest):
     conn = get_db_connection()
@@ -12,7 +13,6 @@ async def login(login_data: LoginRequest):
         raise HTTPException(status_code=500, detail="Database connection failed")
     
     cursor = conn.cursor(dictionary=True)
-    
     try:
         # Buscar usuario por email
         cursor.execute("SELECT * FROM usuarios WHERE email = %s", (login_data.email,))
@@ -25,7 +25,7 @@ async def login(login_data: LoginRequest):
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
-        # Crear token
+        # Crear token JWT
         access_token = create_access_token(
             data={"sub": user['email'], "rol": user['rol'], "user_id": user['id']}
         )
@@ -36,9 +36,15 @@ async def login(login_data: LoginRequest):
         cursor.close()
         conn.close()
 
+
+# ---------------------- REGISTER ----------------------
 @router.post("/register", response_model=UserResponse)
 async def register(user_data: UserCreate):
-    # Verificar que el rol sea válido
+    """
+    Registro de usuario. 
+    Si el rol es estudiante, también lo inserta en la tabla 'estudiantes'.
+    """
+    # Validar el rol
     if user_data.rol not in ['admin', 'profesor', 'estudiante']:
         raise HTTPException(status_code=400, detail="Rol no válido")
     
@@ -47,14 +53,14 @@ async def register(user_data: UserCreate):
         raise HTTPException(status_code=500, detail="Database connection failed")
     
     cursor = conn.cursor()
-    
+
     try:
-        # Verificar si el email ya existe
+        # Verificar si el email ya está registrado
         cursor.execute("SELECT id FROM usuarios WHERE email = %s", (user_data.email,))
         if cursor.fetchone():
             raise HTTPException(status_code=400, detail="El email ya está registrado")
         
-        # Hash password con manejo de errores mejorado
+        # Hashear contraseña
         try:
             hashed_password = get_password_hash(user_data.password)
         except Exception as hash_error:
@@ -63,38 +69,63 @@ async def register(user_data: UserCreate):
                 detail=f"Error procesando contraseña: {str(hash_error)}"
             )
         
-        # Insertar usuario
+        # Insertar usuario en la tabla usuarios
         cursor.execute(
-            "INSERT INTO usuarios (email, password_hash, rol, nombre) VALUES (%s, %s, %s, %s)",
+            """
+            INSERT INTO usuarios (email, password_hash, rol, nombre)
+            VALUES (%s, %s, %s, %s)
+            """,
             (user_data.email, hashed_password, user_data.rol, user_data.nombre)
         )
         conn.commit()
-        
-        # Obtener el usuario creado
-        cursor.execute("SELECT id, email, rol, nombre FROM usuarios WHERE email = %s", (user_data.email,))
+
+        # Obtener el ID del usuario recién creado
+        cursor.execute("SELECT id FROM usuarios WHERE email = %s", (user_data.email,))
         new_user = cursor.fetchone()
-        
+        user_id = new_user[0]
+
+        # ✅ Si el rol es estudiante, también insertarlo en la tabla `estudiantes`
+        if user_data.rol == "estudiante":
+            codigo_estudiante = f"EST{str(user_id).zfill(3)}"  # Ejemplo: EST001
+            cursor.execute(
+                """
+                INSERT INTO estudiantes (usuario_id, codigo_estudiante, nombre)
+                VALUES (%s, %s, %s)
+                """,
+                (user_id, codigo_estudiante, user_data.nombre)
+            )
+            conn.commit()
+            print(f"✅ Estudiante creado con código {codigo_estudiante}")
+
+        # Retornar el nuevo usuario
         return {
-            "id": new_user[0],
-            "email": new_user[1],
-            "rol": new_user[2],
-            "nombre": new_user[3]
+            "id": user_id,
+            "email": user_data.email,
+            "rol": user_data.rol,
+            "nombre": user_data.nombre
         }
     
     except HTTPException:
         raise
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=f"Error creating user: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creando usuario: {str(e)}")
     finally:
         cursor.close()
         conn.close()
 
+
+# ---------------------- REFRESH TOKEN ----------------------
 @router.post("/refresh", response_model=Token)
 async def refresh_token(current_user: dict = Depends(get_current_user)):
-    # Crear nuevo token con la misma información
+    """
+    Genera un nuevo token manteniendo los datos del usuario actual.
+    """
     new_token = create_access_token(
-        data={"sub": current_user['sub'], "rol": current_user['rol'], "user_id": current_user['user_id']}
+        data={
+            "sub": current_user['sub'],
+            "rol": current_user['rol'],
+            "user_id": current_user['user_id']
+        }
     )
-    
     return {"access_token": new_token, "token_type": "bearer"}

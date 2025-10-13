@@ -18,6 +18,7 @@ export interface Nota {
   observaciones?: string;
   creado_por?: number;
   creado_por_nombre?: string;
+  creado_en?: string;
 }
 
 export interface Curso {
@@ -34,7 +35,7 @@ export class NotasService {
 
   constructor(private http: HttpClient) {}
 
-  // ✅ EL INTERCEPTOR AÑADE AUTOMÁTICAMENTE EL TOKEN
+  // ✅ Obtener todas las notas (para profesores/admin)
   obtenerNotasProfesor(): Observable<Nota[]> {
     return this.http.get<any[]>(`${this.apiUrl}/notas/`).pipe(
       map((notas) => this.adaptarNotasBackend(notas)),
@@ -45,6 +46,7 @@ export class NotasService {
     );
   }
 
+  // ✅ Obtener mis notas (para estudiantes)
   obtenerMisNotas(): Observable<Nota[]> {
     return this.http.get<any[]>(`${this.apiUrl}/notas/mias`).pipe(
       map((notas) => this.adaptarNotasBackend(notas)),
@@ -55,12 +57,14 @@ export class NotasService {
     );
   }
 
+  // ✅ Agregar nueva nota
   agregarNota(nota: Nota): Observable<Nota> {
     const notaBackend = {
       estudiante_id: nota.estudiante_id,
       asignatura: nota.asignatura,
-      calificacion: this.convertirCalificacionParaBackend(nota.calificacion),
+      calificacion: nota.calificacion, // Ya está en escala 0-5
       periodo: nota.periodo,
+      observaciones: nota.observaciones || '',
     };
 
     return this.http.post<any>(`${this.apiUrl}/notas/`, notaBackend).pipe(
@@ -72,18 +76,22 @@ export class NotasService {
     );
   }
 
+  // ✅ Actualizar nota existente
   actualizarNota(id: number, nota: Nota): Observable<Nota> {
     const notaBackend = {
       estudiante_id: nota.estudiante_id,
       asignatura: nota.asignatura,
-      calificacion: this.convertirCalificacionParaBackend(nota.calificacion),
+      calificacion: nota.calificacion,
       periodo: nota.periodo,
+      observaciones: nota.observaciones || '',
     };
 
-    console.warn('Endpoint PUT no implementado en backend');
+    // Nota: El endpoint PUT necesita ser implementado en el backend
+    console.warn('Endpoint PUT no implementado en backend - usando simulación');
     return of(this.adaptarNotaBackend({ ...notaBackend, id }));
   }
 
+  // ✅ Eliminar nota
   eliminarNota(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/notas/${id}`).pipe(
       catchError((error) => {
@@ -93,6 +101,7 @@ export class NotasService {
     );
   }
 
+  // ✅ Adaptar notas del backend
   private adaptarNotasBackend(notas: any[]): Nota[] {
     return notas.map((nota) => this.adaptarNotaBackend(nota));
   }
@@ -101,27 +110,22 @@ export class NotasService {
     return {
       id: nota.id,
       estudiante_id: nota.estudiante_id,
-      estudiante_nombre: nota.estudiante_nombre,
-      estudianteNombre: nota.estudiante_nombre,
+      estudiante_nombre:
+        nota.estudiante_nombre || `Estudiante ${nota.estudiante_id}`,
+      estudianteNombre:
+        nota.estudiante_nombre || `Estudiante ${nota.estudiante_id}`,
       asignatura: nota.asignatura,
       cursoNombre: nota.asignatura,
       cursoId: this.obtenerCursoIdPorAsignatura(nota.asignatura),
-      calificacion: this.convertirEscalaCalificacion(nota.calificacion),
+      calificacion: parseFloat(nota.calificacion), // Ya viene en escala 0-5
       periodo: nota.periodo,
       tipoEvaluacion: 'Parcial',
-      fecha: new Date(),
-      observaciones: '',
+      fecha: nota.creado_en ? new Date(nota.creado_en) : new Date(),
+      observaciones: nota.observaciones || '',
       creado_por: nota.creado_por,
       creado_por_nombre: nota.creado_por_nombre,
+      creado_en: nota.creado_en,
     };
-  }
-
-  private convertirEscalaCalificacion(calificacion: number): number {
-    return calificacion * 2;
-  }
-
-  private convertirCalificacionParaBackend(calificacion: number): number {
-    return calificacion / 2;
   }
 
   private obtenerCursoIdPorAsignatura(asignatura: string): string {
@@ -129,6 +133,8 @@ export class NotasService {
       matemáticas: '1',
       programación: '3',
       física: '9',
+      matematicas: '1',
+      programacion: '3',
     };
 
     const asignaturaLower = asignatura.toLowerCase();
@@ -140,6 +146,7 @@ export class NotasService {
     return '1';
   }
 
+  // ✅ Obtener cursos del profesor
   obtenerCursosProfesor(): Observable<Curso[]> {
     const cursos: Curso[] = [
       {
@@ -161,8 +168,15 @@ export class NotasService {
     return of(cursos);
   }
 
-  obtenerEstudiantes(): any[] {
-    return [{ id: 1, nombre: 'María García', codigo: 'EST001' }];
+  // ✅ Obtener estudiantes (mejorado)
+  obtenerEstudiantes(): Observable<any[]> {
+    // En una implementación real, esto haría una llamada HTTP
+    const estudiantes = [
+      { id: 1, nombre: 'María García', codigo: 'EST001' },
+      { id: 2, nombre: 'Carlos López', codigo: 'EST002' },
+      { id: 3, nombre: 'Ana Martínez', codigo: 'EST003' },
+    ];
+    return of(estudiantes);
   }
 
   obtenerTiposEvaluacion(): string[] {

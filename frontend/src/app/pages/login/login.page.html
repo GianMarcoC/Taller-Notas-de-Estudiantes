@@ -11,7 +11,7 @@
     <ion-item class="form-item">
       <ion-label position="stacked">Correo o Usuario</ion-label>
       <ion-input
-        [(ngModel)]="username"
+        [(ngModel)]="email"
         placeholder="Ingresa tu usuario"
         type="text"
       >
@@ -48,40 +48,6 @@
       <span>O ingresa rápidamente</span>
     </div>
 
-    <!-- Login rápido para testing -->
-    <div class="quick-login">
-      <div class="quick-title">Acceso rápido para pruebas:</div>
-      <div class="quick-buttons">
-        <ion-button
-          expand="block"
-          (click)="quickLogin('estudiante')"
-          class="role-button student-btn"
-          fill="solid"
-        >
-          <ion-icon name="school" slot="start"></ion-icon>
-          Estudiante
-        </ion-button>
-
-        <ion-button
-          expand="block"
-          (click)="quickLogin('profesor')"
-          class="role-button teacher-btn"
-          fill="solid"
-        >
-          <ion-icon name="person" slot="start"></ion-icon>
-          Profesor
-        </ion-button>
-
-        <ion-button
-          expand="block"
-          (click)="quickLogin('admin')"
-          class="role-button admin-btn"
-          fill="solid"
-        >
-          <ion-icon name="shield" slot="start"></ion-icon>
-          Administrador
-        </ion-button>
-      </div>
-    </div>
+   
   </div>
 </ion-content>

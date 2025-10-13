@@ -1,61 +1,112 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService, User } from '../../services/auth.service';
-import { IonicModule } from '@ionic/angular';
+import {
+  EstudiantesService,
+  Estudiante,
+} from '../../services/estudiantes.service';
+import { AuthService } from '../../services/auth.service';
+import {
+  AlertController,
+  IonicModule,
+  LoadingController,
+} from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Estudiante {
-  id: number;
-  codigo: string;
-  nombre: string;
-  curso: string;
-  promedio: number;
-  estado: string;
-}
 
 @Component({
   selector: 'app-estudiantes',
   templateUrl: './estudiantes.page.html',
   styleUrls: ['./estudiantes.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule],
 })
 export class EstudiantesPage implements OnInit {
-  user: User | null = null;
   estudiantes: Estudiante[] = [];
+  user: any = null;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private estudiantesService: EstudiantesService,
+    private authService: AuthService,
+    private loadingCtrl: LoadingController,
+    private alertCtrl: AlertController
+  ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.user = this.authService.getCurrentUser();
-    this.cargarEstudiantes();
+    await this.cargarEstudiantes();
   }
 
-  cargarEstudiantes() {
-    // Datos de ejemplo
-    this.estudiantes = [
-      { id: 1, codigo: '2024001', nombre: 'Ana García', curso: 'Matemáticas', promedio: 4.2, estado: 'Activo' },
-      { id: 2, codigo: '2024002', nombre: 'Carlos López', curso: 'Física', promedio: 3.8, estado: 'Activo' },
-      { id: 3, codigo: '2024003', nombre: 'María Rodríguez', curso: 'Química', promedio: 4.5, estado: 'Inactivo' },
-      { id: 4, codigo: '2024004', nombre: 'Pedro Martínez', curso: 'Programación', promedio: 3.9, estado: 'Activo' }
-    ];
-  }
+  async cargarEstudiantes() {
+    const loading = await this.loadingCtrl.create({
+      message: 'Cargando estudiantes...',
+    });
+    await loading.present();
 
-  nuevoEstudiante() {
-    alert('Funcionalidad para agregar nuevo estudiante');
-  }
-
-  editarEstudiante(estudiante: Estudiante) {
-    alert(`Editando estudiante: ${estudiante.nombre}`);
-  }
-
-  eliminarEstudiante(estudiante: Estudiante) {
-    if (confirm(`¿Estás seguro de eliminar a ${estudiante.nombre}?`)) {
-      this.estudiantes = this.estudiantes.filter(e => e.id !== estudiante.id);
-    }
+    this.estudiantesService.obtenerEstudiantes().subscribe({
+      next: async (data) => {
+        this.estudiantes = data;
+        console.log('✅ Estudiantes cargados:', data);
+        await loading.dismiss();
+      },
+      error: async (err) => {
+        console.error('❌ Error al cargar estudiantes:', err);
+        await loading.dismiss();
+        const alert = await this.alertCtrl.create({
+          header: 'Error',
+          message: 'No se pudo cargar la lista de estudiantes.',
+          buttons: ['OK'],
+        });
+        await alert.present();
+      },
+    });
   }
 
   getEstadoColor(estado: string): string {
-    return estado === 'Activo' ? 'success' : 'warning';
+    switch (estado?.toLowerCase()) {
+      case 'activo':
+        return 'success';
+      case 'inactivo':
+        return 'warning';
+      case 'retirado':
+        return 'danger';
+      default:
+        return 'medium';
+    }
+  }
+
+  nuevoEstudiante() {
+    console.log(
+      '➕ Nuevo estudiante (pendiente de implementar modal/formulario)'
+    );
+  }
+
+  editarEstudiante(estudiante: Estudiante) {
+    console.log('✏️ Editar estudiante:', estudiante);
+  }
+
+  async eliminarEstudiante(estudiante: Estudiante) {
+    const alert = await this.alertCtrl.create({
+      header: 'Confirmar eliminación',
+      message: `¿Eliminar al estudiante ${estudiante.nombre}?`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Eliminar',
+          handler: () => {
+            this.estudiantesService
+              .eliminarEstudiante(estudiante.id)
+              .subscribe({
+                next: () => {
+                  this.estudiantes = this.estudiantes.filter(
+                    (e) => e.id !== estudiante.id
+                  );
+                },
+                error: (err) =>
+                  console.error('Error al eliminar estudiante:', err),
+              });
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 }
