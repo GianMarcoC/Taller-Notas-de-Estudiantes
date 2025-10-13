@@ -161,4 +161,9 @@ export class AuthService {
       return null;
     }
   }
+
+  /** 🔹 Obtener token JWT almacenado (para encabezados) */
+  getToken(): string | null {
+    return localStorage.getItem('auth_token');
+  }
 }

@@ -1,7 +1,12 @@
-import { Component } from '@angular/core';
-import { IonicModule, NavController } from '@ionic/angular';
+import { Component, OnInit } from '@angular/core';
+import { IonicModule, NavController, AlertController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {
+  AuditoriaService,
+  LogAuditoria,
+} from '../../services/auditoria.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-auditoria',
@@ -9,32 +14,34 @@ import { FormsModule } from '@angular/forms';
   imports: [IonicModule, CommonModule, FormsModule],
   templateUrl: './auditoria.page.html',
   styleUrls: ['./auditoria.page.scss'],
- 
 })
-export class AuditoriaPage {
+export class AuditoriaPage implements OnInit {
   filtro = '';
-  auditoria = [
-    {
-      accion: 'Creó usuario',
-      usuario: 'Carlos Pérez',
-      fecha: '2025-10-08',
-      ip: '192.168.0.5',
-    },
-    {
-      accion: 'Eliminó nota',
-      usuario: 'Laura Gómez',
-      fecha: '2025-10-07',
-      ip: '192.168.0.10',
-    },
-    {
-      accion: 'Editó estudiante',
-      usuario: 'Pedro Ruiz',
-      fecha: '2025-10-06',
-      ip: '192.168.0.8',
-    },
-  ];
+  auditoria: LogAuditoria[] = [];
 
-  constructor(private navCtrl: NavController) {}
+  constructor(
+    private navCtrl: NavController,
+    private auditoriaService: AuditoriaService,
+    private authService: AuthService,
+    private alertCtrl: AlertController
+  ) {}
+
+  ngOnInit() {
+    this.cargarAuditoria();
+  }
+
+  cargarAuditoria() {
+    this.auditoriaService.obtenerRegistros().subscribe({
+      next: (data) => {
+        console.log('Registros de auditoría:', data);
+        this.auditoria = data;
+      },
+      error: (err) => {
+        console.error('Error cargando auditoría:', err);
+        this.mostrarAlerta('Error', 'No tienes permisos o la sesión expiró');
+      },
+    });
+  }
 
   get auditoriaFiltrada() {
     const f = this.filtro.toLowerCase();
@@ -44,6 +51,15 @@ export class AuditoriaPage {
         log.usuario.toLowerCase().includes(f) ||
         log.ip.includes(f)
     );
+  }
+
+  async mostrarAlerta(titulo: string, mensaje: string) {
+    const alert = await this.alertCtrl.create({
+      header: titulo,
+      message: mensaje,
+      buttons: ['OK'],
+    });
+    await alert.present();
   }
 
   volverHome() {

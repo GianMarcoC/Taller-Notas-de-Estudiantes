@@ -1,16 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService, User } from '../../services/auth.service';
-import { IonicModule } from '@ionic/angular';
+import { UsuariosService, Usuario } from '../../services/usuarios.service';
+import { IonicModule, AlertController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-
-interface UsuarioSistema {
-  id: number;
-  nombre: string;
-  email: string;
-  role: string;
-  ultimoAcceso: string;
-  estado: string;
-}
 
 @Component({
   selector: 'app-usuarios',
@@ -21,9 +13,13 @@ interface UsuarioSistema {
 })
 export class UsuariosPage implements OnInit {
   user: User | null = null;
-  usuarios: UsuarioSistema[] = [];
+  usuarios: Usuario[] = [];
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private usuariosService: UsuariosService,
+    private alertController: AlertController
+  ) {}
 
   ngOnInit() {
     this.user = this.authService.getCurrentUser();
@@ -31,63 +27,64 @@ export class UsuariosPage implements OnInit {
   }
 
   cargarUsuarios() {
-    // Datos de ejemplo mejorados
-    this.usuarios = [
-      {
-        id: 1,
-        nombre: 'Administrador Principal',
-        email: 'admin@sistema.com',
-        role: 'admin',
-        ultimoAcceso: '2024-03-20 14:30',
-        estado: 'Activo',
+    this.usuariosService.obtenerUsuarios().subscribe({
+      next: (data) => {
+        console.log('Usuarios cargados:', data);
+        this.usuarios = data.map((u) => ({
+          ...u,
+          role: u.rol, // adaptación para el HTML
+          ultimoAcceso: '2024-03-20 10:00', // opcional, hasta que tengas ese campo
+          estado: 'Activo',
+        }));
       },
-      {
-        id: 2,
-        nombre: 'Profesor Matemáticas',
-        email: 'profesor.math@sistema.com',
-        role: 'profesor',
-        ultimoAcceso: '2024-03-19 10:15',
-        estado: 'Activo',
+      error: (error) => {
+        console.error('Error al cargar usuarios:', error);
+        this.mostrarMensaje('Error', 'No se pudieron cargar los usuarios');
       },
-      {
-        id: 3,
-        nombre: 'Ana García López',
-        email: 'ana.estudiante@sistema.com',
-        role: 'estudiante',
-        ultimoAcceso: '2024-03-20 09:45',
-        estado: 'Activo',
-      },
-      {
-        id: 4,
-        nombre: 'Carlos Rodríguez',
-        email: 'carlos.estudiante@sistema.com',
-        role: 'estudiante',
-        ultimoAcceso: '2024-03-18 16:20',
-        estado: 'Activo',
-      },
-      {
-        id: 5,
-        nombre: 'Profesor Física',
-        email: 'profesor.fisica@sistema.com',
-        role: 'profesor',
-        ultimoAcceso: '2024-03-17 11:30',
-        estado: 'Inactivo',
-      },
-    ];
+    });
   }
 
-  nuevoUsuario() {
-    alert('Funcionalidad para agregar nuevo usuario - Próximamente');
+  async eliminarUsuario(usuario: Usuario) {
+    const alert = await this.alertController.create({
+      header: 'Confirmar eliminación',
+      message: `¿Seguro que deseas eliminar a <strong>${usuario.nombre}</strong>?`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: () => {
+            this.usuariosService.eliminarUsuario(usuario.id).subscribe({
+              next: () => {
+                this.mostrarMensaje(
+                  'Éxito',
+                  `Usuario ${usuario.nombre} eliminado correctamente`
+                );
+                this.cargarUsuarios();
+              },
+              error: (err) => {
+                console.error('Error eliminando usuario:', err);
+                this.mostrarMensaje(
+                  'Error',
+                  'No se pudo eliminar el usuario (verifica permisos o rol)'
+                );
+              },
+            });
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 
-  editarUsuario(usuario: UsuarioSistema) {
-    alert(`Editando usuario: ${usuario.nombre} - Próximamente`);
-  }
-
-  eliminarUsuario(usuario: UsuarioSistema) {
-    if (confirm(`¿Estás seguro de eliminar al usuario: ${usuario.nombre}?`)) {
-      this.usuarios = this.usuarios.filter((u) => u.id !== usuario.id);
-    }
+  async mostrarMensaje(titulo: string, mensaje: string) {
+    const alert = await this.alertController.create({
+      header: titulo,
+      message: mensaje,
+      buttons: ['OK'],
+    });
+    await alert.present();
   }
 
   contarUsuarios(): number {
@@ -95,10 +92,10 @@ export class UsuariosPage implements OnInit {
   }
 
   contarPorRol(rol: string): number {
-    return this.usuarios.filter((user) => user.role === rol).length;
+    return this.usuarios.filter((user) => user.rol === rol).length;
   }
 
-  getIconoPorRol(rol: string): string {
+  getIconoPorRol(rol?: string): string {
     switch (rol) {
       case 'admin':
         return 'shield';
@@ -111,7 +108,7 @@ export class UsuariosPage implements OnInit {
     }
   }
 
-  getColorPorRol(rol: string): string {
+  getColorPorRol(rol?: string): string {
     switch (rol) {
       case 'admin':
         return 'danger';
@@ -122,5 +119,19 @@ export class UsuariosPage implements OnInit {
       default:
         return 'primary';
     }
+  }
+
+  nuevoUsuario() {
+    this.mostrarMensaje(
+      'Próximamente',
+      'Función para agregar usuarios en desarrollo'
+    );
+  }
+
+  editarUsuario(usuario: Usuario) {
+    this.mostrarMensaje(
+      'Próximamente',
+      `Función para editar a ${usuario.nombre}`
+    );
   }
 }

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth, usuarios, notas, estudiantes
+from app.routers import auth, usuarios, notas, estudiantes, auditoria
 
 app = FastAPI(
     title="Sistema de Notas Seguro",
@@ -22,6 +22,7 @@ app.include_router(auth.router)
 app.include_router(usuarios.router)
 app.include_router(notas.router)
 app.include_router(estudiantes.router) 
+app.include_router(auditoria.router)
 
 @app.get("/")
 async def root():
