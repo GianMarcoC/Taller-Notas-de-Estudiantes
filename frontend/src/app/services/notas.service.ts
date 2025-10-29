@@ -31,7 +31,7 @@ export interface Curso {
   providedIn: 'root',
 })
 export class NotasService {
-  private apiUrl = 'http://localhost:8000/notas';
+  private apiUrl = 'http://18.224.150.117:8000/notas';
 
   constructor(private http: HttpClient) {}
 
