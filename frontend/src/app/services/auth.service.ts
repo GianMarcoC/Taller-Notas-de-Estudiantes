@@ -1,106 +1,74 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 export interface User {
   id: number;
   nombre: string;
   email: string;
-  role: 'admin' | 'profesor' | 'estudiante';
-}
-
-export interface LoginResponse {
-  access_token: string;
-  token_type: string;
-  user?: User;
+  role: string;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://18.224.150.117:8000/api/auth';
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
+  private apiUrl = 'http://localhost:8000'; // URL de tu backend FastAPI
+  private currentUserSubject: BehaviorSubject<User | null>;
+  public currentUser: Observable<User | null>;
 
   constructor(private http: HttpClient) {
-    this.loadUserFromStorage();
+    const storedUser = sessionStorage.getItem('current_user');
+    this.currentUserSubject = new BehaviorSubject<User | null>(
+      storedUser ? JSON.parse(storedUser) : null
+    );
+    this.currentUser = this.currentUserSubject.asObservable();
   }
 
-  /** 🔹 Cargar usuario almacenado al iniciar la app */
-  private loadUserFromStorage() {
-    const token = localStorage.getItem('auth_token');
-    const userData = localStorage.getItem('current_user');
-
-    if (token && userData) {
-      try {
-        const user: User = JSON.parse(userData);
-        this.currentUserSubject.next(user);
-      } catch (err) {
-        console.error('⚠️ Error al leer current_user del storage:', err);
-        this.logout();
-      }
-    }
-  }
-
-  /** 🔹 Cambiar de rol manualmente (debug o pruebas) */
-  switchRole(newRole: 'admin' | 'profesor' | 'estudiante') {
-    const user = this.getCurrentUser();
-    if (user) {
-      user.role = newRole;
-      localStorage.setItem('current_user', JSON.stringify(user));
-      this.currentUserSubject.next(user);
-    }
-  }
-
-  /** 🔹 Login del usuario */
-  login(email: string, password: string): Observable<LoginResponse> {
+  /** 🔹 Login */
+  login(email: string, password: string): Observable<any> {
     return this.http
-      .post<LoginResponse>(`${this.apiUrl}/login`, { email, password })
+      .post<any>(`${this.apiUrl}/auth/login`, { email, password })
       .pipe(
         tap((response) => {
           if (response.access_token) {
-            console.log('✅ Token recibido:', response.access_token);
-            localStorage.setItem('auth_token', response.access_token);
+            const payload = JSON.parse(atob(response.access_token.split('.')[1]));
+            const userData: User = {
+              id: payload.user_id || 0,
+              nombre: payload.nombre || payload.name || '',
+              email: payload.sub,
+              role: payload.rol || payload.role || 'estudiante',
+            };
 
-            // Si el backend devuelve el usuario directamente
-            if (response.user) {
-              console.log('👤 Usuario recibido desde backend:', response.user);
-              localStorage.setItem(
-                'current_user',
-                JSON.stringify(response.user)
-              );
-              this.currentUserSubject.next(response.user);
-            } else {
-              // Si no, lo decodificamos manualmente desde el JWT
-              const payload = this.decodeToken(response.access_token);
-              if (payload) {
-                const user: User = {
-                  id: payload.user_id || 0,
-                  nombre: payload.nombre || payload.name || '',
-                  email: payload.sub,
-                  role: payload.rol || payload.role || 'estudiante',
-                };
-                console.log('🧩 Usuario construido desde token:', user);
-                localStorage.setItem('current_user', JSON.stringify(user));
-                this.currentUserSubject.next(user);
-              }
-            }
+            // Guardamos datos temporalmente (NO sensibles) en sessionStorage
+            sessionStorage.setItem('auth_token', response.access_token);
+            sessionStorage.setItem('current_user', JSON.stringify(userData));
+            this.currentUserSubject.next(userData);
           }
         })
       );
   }
 
-  /** 🔹 Registrar usuario */
-  register(usuario: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, usuario);
+  /** 🔹 Registro de usuario */
+  register(user: {
+    nombre: string;
+    email: string;
+    password: string;
+    rol: string;
+  }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/register`, user);
   }
 
-  /** 🔹 Logout (eliminar sesión) */
+  /** 🔹 Obtener token almacenado */
+  getToken(): string | null {
+    return sessionStorage.getItem('auth_token');
+  }
+
+  /** 🔹 Cerrar sesión */
   logout(): void {
-    console.log('🚪 Cerrando sesión...');
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('current_user');
+    sessionStorage.removeItem('auth_token');
+    sessionStorage.removeItem('current_user');
     this.currentUserSubject.next(null);
   }
 
@@ -109,61 +77,18 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-  /** 🔹 Verificar si el usuario está autenticado */
+  /** 🔹 Verificar autenticación */
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('auth_token');
-    if (!token) return false;
-
-    const valid = this.isTokenValid();
-    console.log('🔐 Token válido?', valid);
-    return valid;
+    return !!sessionStorage.getItem('auth_token');
   }
 
-  /** 🔹 Verificar si el usuario tiene un rol permitido */
-  hasRole(role: string): boolean {
+  /** 🔹 Cambiar rol (usado en home.page.ts) */
+  switchRole(newRole: string): void {
     const user = this.getCurrentUser();
-    const has = user?.role === role || (user as any)?.rol === role;
-    console.log(`🎭 Verificando rol "${role}":`, has);
-    return has;
-  }
-
-  /** 🔹 Verificar si el token aún no expiró */
-  isTokenValid(): boolean {
-    const token = localStorage.getItem('auth_token');
-    if (!token) return false;
-
-    try {
-      const payload = this.decodeToken(token);
-      const now = Math.floor(Date.now() / 1000);
-      const valid = payload.exp > now;
-      if (!valid) console.warn('⚠️ Token expirado');
-      return valid;
-    } catch (err) {
-      console.error('❌ Error verificando token:', err);
-      return false;
+    if (user) {
+      const updatedUser = { ...user, role: newRole };
+      sessionStorage.setItem('current_user', JSON.stringify(updatedUser));
+      this.currentUserSubject.next(updatedUser);
     }
-  }
-
-  /** 🔹 Refrescar token (si tu backend lo permite) */
-  refreshToken(): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/refresh`, {});
-  }
-
-  /** 🔹 Decodificar token JWT */
-  private decodeToken(token: string): any {
-    try {
-      const payload = token.split('.')[1];
-      const decoded = JSON.parse(atob(payload));
-      console.log('🧩 Token decodificado:', decoded);
-      return decoded;
-    } catch (error) {
-      console.error('❌ Error decodificando token:', error);
-      return null;
-    }
-  }
-
-  /** 🔹 Obtener token JWT almacenado (para encabezados) */
-  getToken(): string | null {
-    return localStorage.getItem('auth_token');
   }
 }
