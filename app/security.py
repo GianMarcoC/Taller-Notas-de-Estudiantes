@@ -5,12 +5,15 @@ import hashlib
 import secrets
 from fastapi import Response
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 # Config
 SECRET_KEY = "tu_clave_secreta_super_segura_cambiar_en_produccion"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60  # ajustar
+
+# Security dependency
+security = HTTPBearer()
 
 # Password hashing (ya tienes esto, lo dejo igual)
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -60,8 +63,7 @@ def set_auth_cookie(response: Response, token: str, max_age: int = 3600):
 def clear_auth_cookie(response: Response):
     response.delete_cookie("access_token", path="/")
 
-    security = HTTPBearer()
-
+# Dependency para obtener el usuario actual
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = credentials.credentials
     payload = verify_token(token)
