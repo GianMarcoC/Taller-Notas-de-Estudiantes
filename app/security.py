@@ -4,6 +4,8 @@ from jose import JWTError, jwt
 import hashlib
 import secrets
 from fastapi import Response
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer
 
 # Config
 SECRET_KEY = "tu_clave_secreta_super_segura_cambiar_en_produccion"
@@ -57,3 +59,16 @@ def set_auth_cookie(response: Response, token: str, max_age: int = 3600):
 
 def clear_auth_cookie(response: Response):
     response.delete_cookie("access_token", path="/")
+
+    security = HTTPBearer()
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    payload = verify_token(token)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return payload
