@@ -19,7 +19,7 @@ export class HomePage implements OnInit {
 
   ngOnInit() {
     this.user = this.authService.getCurrentUser();
-    console.log('Usuario actual:');
+    console.log('Usuario actual:', this.user);
 
     // Si no hay usuario, redirigir a login
     if (!this.user) {
@@ -28,7 +28,7 @@ export class HomePage implements OnInit {
   }
 
   switchRole(event: any) {
-    console.log('Cambiando rol:');
+    console.log('Cambiando rol:', event.detail.value);
     const newRole = event.detail.value;
     this.authService.switchRole(newRole);
 

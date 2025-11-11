@@ -41,12 +41,12 @@ export class RoleGuard implements CanActivate {
     const hasRequiredRole = expectedRoles.includes(user.role);
 
     if (!hasRequiredRole) {
-      console.warn('⛔ Rol no autorizado:');
+      console.warn('⛔ Rol no autorizado:', user.role);
       this.router.navigate(['/home']);
       return false;
     }
 
-    console.log('✅ Acceso permitido para rol:');
+    console.log('✅ Acceso permitido para rol:', user.role);
     return true;
   }
 }
