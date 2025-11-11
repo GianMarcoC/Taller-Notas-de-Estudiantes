@@ -44,11 +44,11 @@ export class EstudiantesPage implements OnInit {
     this.estudiantesService.obtenerEstudiantes().subscribe({
       next: async (data) => {
         this.estudiantes = data;
-        console.log('✅ Estudiantes cargados:');
+        console.log('✅ Estudiantes cargados:', data);
         await loading.dismiss();
       },
       error: async (err) => {
-        console.error('❌ Error al cargar estudiantes:');
+        console.error('❌ Error al cargar estudiantes:', err);
         await loading.dismiss();
         const alert = await this.alertCtrl.create({
           header: 'Error',
@@ -80,7 +80,7 @@ export class EstudiantesPage implements OnInit {
   }
 
   editarEstudiante(estudiante: Estudiante) {
-    console.log('✏️ Editar estudiante:');
+    console.log('✏️ Editar estudiante:', estudiante);
   }
 
   async eliminarEstudiante(estudiante: Estudiante) {
@@ -101,7 +101,7 @@ export class EstudiantesPage implements OnInit {
                   );
                 },
                 error: (err) =>
-                  console.error('Error al eliminar estudiante:'),
+                  console.error('Error al eliminar estudiante:', err),
               });
           },
         },
