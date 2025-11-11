@@ -11,9 +11,9 @@ app = FastAPI(
 
 # Cambia "*" por los orígenes permitidos (ej: el puerto de Ionic)
 origins = [
-    "http://localhost:8100",   # ionic serve
-    "http://127.0.0.1:8100",   # alternativa local
-    # "https://tu-dominio-frontend.com"
+    "http://localhost:*",
+    "http://127.0.0.1:*",
+    "http://0.0.0.0:*",
 ]
 
 app.add_middleware(
