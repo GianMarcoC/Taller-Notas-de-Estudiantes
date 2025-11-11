@@ -14,7 +14,7 @@ export interface User {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8000'; // URL de tu backend FastAPI
+  private apiUrl = 'http://3.145.217.121:8000'; // URL de tu backend FastAPI
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser: Observable<User | null>;
 
