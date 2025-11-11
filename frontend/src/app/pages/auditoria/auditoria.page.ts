@@ -33,11 +33,11 @@ export class AuditoriaPage implements OnInit {
   cargarAuditoria() {
     this.auditoriaService.obtenerRegistros().subscribe({
       next: (data) => {
-        console.log('Registros de auditoría:', data);
+        console.log('Registros de auditoría:');
         this.auditoria = data;
       },
       error: (err) => {
-        console.error('Error cargando auditoría:', err);
+        console.error('Error cargando auditoría:');
         this.mostrarAlerta('Error', 'No tienes permisos o la sesión expiró');
       },
     });

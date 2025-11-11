@@ -34,7 +34,7 @@ export class HomePage implements OnInit {
 
     // Actualizar el usuario localmente
     this.user = this.authService.getCurrentUser();
-    console.log('Nuevo usuario:', this.user);
+    console.log('Nuevo usuario:');
   }
 
   logout() {
