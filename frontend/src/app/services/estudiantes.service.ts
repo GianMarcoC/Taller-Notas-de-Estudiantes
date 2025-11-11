@@ -16,7 +16,7 @@ export interface Estudiante {
   providedIn: 'root'
 })
 export class EstudiantesService {
-  private apiUrl = 'http://3.145.217.121:8000/api/estudiantes';
+  private apiUrl = 'http://18.224.150.117:8000/api/estudiantes';
 
   constructor(private http: HttpClient) {}
 
