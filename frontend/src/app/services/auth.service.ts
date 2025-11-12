@@ -29,7 +29,7 @@ export class AuthService {
   /** 🔹 Login */
   login(email: string, password: string): Observable<any> {
     return this.http
-      .post<any>(`${this.apiUrl}/auth/login`, { email, password })
+      .post<any>(`${this.apiUrl}/login`, { email, password })
       .pipe(
         tap((response) => {
           if (response.access_token) {
