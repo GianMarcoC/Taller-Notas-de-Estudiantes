@@ -28,12 +28,12 @@ export class LoginPage implements OnInit {
   ) {}
 
   ngOnInit() {
-  const token = sessionStorage.getItem('auth_token');
-  if (token && this.authService.isAuthenticated()) {
-    console.log('🔐 Sesión activa, redirigiendo a /home');
-    this.router.navigate(['/home']);
+    const token = localStorage.getItem('auth_token');
+    if (token && this.authService.isAuthenticated()) {
+      console.log('🔐 Sesión activa, redirigiendo a /home');
+      this.router.navigate(['/home']);
+    }
   }
-}
 
   async login() {
     if (!this.email.trim() || !this.password.trim()) {
@@ -50,21 +50,63 @@ export class LoginPage implements OnInit {
     });
     await loading.present();
 
+    console.log('🟡 Intentando login con:', this.email);
+
     this.authService.login(this.email, this.password).subscribe({
       next: async (response: any) => {
-        await loading.dismiss();
         console.log('✅ Login exitoso:', response);
-        // Si backend devolvió user lo tenemos en currentUserSubject ya
-        this.router.navigate(['/home']);
+
+        if (response.access_token) {
+          // 🔐 Guardar token
+          localStorage.setItem('auth_token', response.access_token);
+
+          try {
+            // 🧩 Decodificar token JWT
+            const payload = JSON.parse(
+              atob(response.access_token.split('.')[1])
+            );
+            console.log('🧩 Token decodificado:', payload);
+
+            // 🔎 Determinar rol y usuario
+            const userRole = payload.rol || payload.role || 'estudiante';
+            const userData = {
+              id: payload.user_id || 0,
+              nombre: payload.nombre || payload.name || '', // 👈 agregado para cumplir la interfaz
+              email: payload.sub,
+              role: userRole,
+            };
+
+            // 💾 Guardar usuario sincronizado con el token
+            localStorage.setItem('current_user', JSON.stringify(userData));
+            this.authService['currentUserSubject'].next(userData);
+
+            await loading.dismiss();
+
+            console.log('🔐 Usuario autenticado con rol:', userRole);
+            this.router.navigate(['/home']);
+          } catch (error) {
+            await loading.dismiss();
+            console.error('❌ Error decodificando token:', error);
+            this.mostrarAlerta('Error', 'El token recibido no es válido.');
+          }
+        } else {
+          await loading.dismiss();
+          this.mostrarAlerta(
+            'Error',
+            'El servidor no devolvió un token válido.'
+          );
+        }
       },
+
       error: async (err) => {
-        await loading.dismiss();
         console.error('❌ Error al iniciar sesión:', err);
+        await loading.dismiss();
         this.mostrarAlerta(
           'Error',
           'Usuario o contraseña incorrectos, o problema con el servidor.'
         );
       },
+
       complete: () => console.log('🔁 Petición de login completada'),
     });
   }

@@ -32,7 +32,9 @@ export class RegistroPage {
     private loadingController: LoadingController
   ) {}
 
+  /** 🔹 Registrar nuevo usuario */
   async registrar() {
+    // Validaciones básicas
     if (
       !this.usuario.nombre.trim() ||
       !this.usuario.email.trim() ||
@@ -58,6 +60,7 @@ export class RegistroPage {
     });
     await loading.present();
 
+    // 👇 Estructura exacta que espera FastAPI
     const nuevoUsuario = {
       nombre: this.usuario.nombre,
       email: this.usuario.email,
@@ -74,7 +77,7 @@ export class RegistroPage {
         this.mostrarAlerta('Éxito', 'Tu cuenta ha sido creada correctamente.');
         this.router.navigate(['/login']);
       },
-      error: async (err: any) => { // ✅ tipado explícito
+      error: async (err) => {
         await loading.dismiss();
         console.error('❌ Error al registrar:', err);
 
