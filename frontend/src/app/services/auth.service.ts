@@ -14,7 +14,7 @@ export interface User {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://3.145.217.121:8000'; // URL de tu backend FastAPI
+  private apiUrl = 'http://ec2-3-145-217-121.us-east-2.compute.amazonaws.com:8000'; // URL de tu backend FastAPI
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser: Observable<User | null>;
 
@@ -29,7 +29,7 @@ export class AuthService {
   /** 🔹 Login */
   login(email: string, password: string): Observable<any> {
     return this.http
-      .post<any>(`${this.apiUrl}/login`, { email, password })
+      .post<any>(`${this.apiUrl}/auth/login`, { email, password })
       .pipe(
         tap((response) => {
           if (response.access_token) {
