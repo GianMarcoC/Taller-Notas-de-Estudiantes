@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService, User } from '../../services/auth.service';
 import { UsuariosService, Usuario } from '../../services/usuarios.service';
+import { LoggerService } from '../../services/logger.service';
 import { IonicModule, AlertController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 
@@ -18,7 +19,8 @@ export class UsuariosPage implements OnInit {
   constructor(
     private authService: AuthService,
     private usuariosService: UsuariosService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private logger: LoggerService
   ) {}
 
   ngOnInit() {
@@ -29,7 +31,9 @@ export class UsuariosPage implements OnInit {
   cargarUsuarios() {
     this.usuariosService.obtenerUsuarios().subscribe({
       next: (data) => {
-        console.log('Usuarios cargados:', data);
+        this.logger.debug('Usuarios cargados', { 
+          count: data.length 
+        });
         this.usuarios = data.map((u) => ({
           ...u,
           role: u.rol, // adaptación para el HTML
@@ -38,7 +42,7 @@ export class UsuariosPage implements OnInit {
         }));
       },
       error: (error) => {
-        console.error('Error al cargar usuarios:', error);
+        this.logger.error('Error al cargar usuarios', error);
         this.mostrarMensaje('Error', 'No se pudieron cargar los usuarios');
       },
     });
@@ -63,7 +67,7 @@ export class UsuariosPage implements OnInit {
                 this.cargarUsuarios();
               },
               error: (err) => {
-                console.error('Error eliminando usuario:', err);
+                this.logger.error('Error eliminando usuario', err);
                 this.mostrarMensaje(
                   'Error',
                   'No se pudo eliminar el usuario (verifica permisos o rol)'

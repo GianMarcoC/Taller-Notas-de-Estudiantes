@@ -7,6 +7,7 @@ import {
   LogAuditoria,
 } from '../../services/auditoria.service';
 import { AuthService } from '../../services/auth.service';
+import { LoggerService } from '../../services/logger.service';
 
 @Component({
   selector: 'app-auditoria',
@@ -23,7 +24,8 @@ export class AuditoriaPage implements OnInit {
     private navCtrl: NavController,
     private auditoriaService: AuditoriaService,
     private authService: AuthService,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private logger: LoggerService
   ) {}
 
   ngOnInit() {
@@ -33,11 +35,13 @@ export class AuditoriaPage implements OnInit {
   cargarAuditoria() {
     this.auditoriaService.obtenerRegistros().subscribe({
       next: (data) => {
-        console.log('Registros de auditoría:', data);
+        this.logger.debug('Registros de auditoría cargados', { 
+          count: data.length 
+        });
         this.auditoria = data;
       },
       error: (err) => {
-        console.error('Error cargando auditoría:', err);
+        this.logger.error('Error cargando auditoría', err);
         this.mostrarAlerta('Error', 'No tienes permisos o la sesión expiró');
       },
     });

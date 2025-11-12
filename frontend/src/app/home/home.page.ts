@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService, User } from '../services/auth.service';
+import { LoggerService } from '../services/logger.service';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -15,11 +16,18 @@ import { RouterModule } from '@angular/router';
 export class HomePage implements OnInit {
   user: User | null = null;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService, 
+    private router: Router,
+    private logger: LoggerService
+  ) {}
 
   ngOnInit() {
     this.user = this.authService.getCurrentUser();
-    console.log('Usuario actual:', this.user);
+    this.logger.debug('Usuario actual cargado', { 
+      id: this.user?.id, 
+      role: this.user?.role 
+    });
 
     // Si no hay usuario, redirigir a login
     if (!this.user) {
@@ -28,13 +36,16 @@ export class HomePage implements OnInit {
   }
 
   switchRole(event: any) {
-    console.log('Cambiando rol:', event.detail.value);
     const newRole = event.detail.value;
+    this.logger.debug('Cambiando rol', { newRole });
     this.authService.switchRole(newRole);
 
     // Actualizar el usuario localmente
     this.user = this.authService.getCurrentUser();
-    console.log('Nuevo usuario:', this.user);
+    this.logger.debug('Nuevo usuario configurado', { 
+      id: this.user?.id, 
+      role: this.user?.role 
+    });
   }
 
   logout() {

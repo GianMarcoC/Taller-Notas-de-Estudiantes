@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { LoggerService } from '../../services/logger.service';
 import {
   IonicModule,
   AlertController,
@@ -22,6 +23,7 @@ export class LoginPage implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private logger: LoggerService,
     private router: Router,
     private alertController: AlertController,
     private loadingController: LoadingController
@@ -30,7 +32,7 @@ export class LoginPage implements OnInit {
   ngOnInit() {
     const token = this.authService.getToken();
     if (token && this.authService.isAuthenticated()) {
-      console.log('🔐 Sesión activa, redirigiendo a /home');
+      this.logger.debug('Sesión activa, redirigiendo a /home');
       this.router.navigate(['/home']);
     }
   }
@@ -50,11 +52,13 @@ export class LoginPage implements OnInit {
     });
     await loading.present();
 
-    console.log('🟡 Intentando login con:', this.email);
+    this.logger.debug('Intentando login', { 
+      email: '***REDACTED***' 
+    });
 
     this.authService.login(this.email, this.password).subscribe({
       next: async (response: any) => {
-        console.log('✅ Login exitoso:', response);
+        this.logger.debug('Login exitoso');
 
         if (response.access_token) {
           // 🔐 Guardar token usando el servicio seguro
@@ -65,7 +69,7 @@ export class LoginPage implements OnInit {
             const payload = JSON.parse(
               atob(response.access_token.split('.')[1])
             );
-            console.log('🧩 Token decodificado:', payload);
+            this.logger.debug('Token decodificado');
 
             // 🔎 Determinar rol y usuario (solo datos necesarios)
             const userRole = payload.rol || payload.role || 'estudiante';
@@ -81,11 +85,13 @@ export class LoginPage implements OnInit {
 
             await loading.dismiss();
 
-            console.log('🔐 Usuario autenticado con rol:', userRole);
+            this.logger.debug('Usuario autenticado', { 
+              role: userRole 
+            });
             this.router.navigate(['/home']);
           } catch (error) {
             await loading.dismiss();
-            console.error('❌ Error decodificando token:', error);
+            this.logger.error('Error decodificando token', error);
             this.mostrarAlerta('Error', 'El token recibido no es válido.');
           }
         } else {
@@ -98,7 +104,7 @@ export class LoginPage implements OnInit {
       },
 
       error: async (err) => {
-        console.error('❌ Error al iniciar sesión:', err);
+        this.logger.error('Error al iniciar sesión', err);
         await loading.dismiss();
         this.mostrarAlerta(
           'Error',
@@ -106,7 +112,7 @@ export class LoginPage implements OnInit {
         );
       },
 
-      complete: () => console.log('🔁 Petición de login completada'),
+      complete: () => this.logger.debug('Petición de login completada'),
     });
   }
 

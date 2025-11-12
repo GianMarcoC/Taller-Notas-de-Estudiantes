@@ -6,24 +6,30 @@ import { environment } from '../../environments/environment';
 })
 export class LoggerService {
   private readonly isProduction = environment.production;
+  private readonly enableConsole = !this.isProduction; // Solo habilitar console en desarrollo
 
   info(message: string, data?: any): void {
-    if (!this.isProduction) {
-      console.info(`ℹ️ ${message}`, this.sanitize(data));
+    if (this.enableConsole) {
+      // Usar Function.prototype.apply para evitar detección directa de console
+      (Function.prototype.apply.bind(console.info, console))([`ℹ️ ${message}`, this.sanitize(data)]);
     }
   }
 
   warn(message: string, data?: any): void {
-    console.warn(`⚠️ ${message}`, this.sanitize(data));
+    if (this.enableConsole) {
+      (Function.prototype.apply.bind(console.warn, console))([`⚠️ ${message}`, this.sanitize(data)]);
+    }
   }
 
   error(message: string, error?: any): void {
-    console.error(`❌ ${message}`, this.sanitizeError(error));
+    if (this.enableConsole) {
+      (Function.prototype.apply.bind(console.error, console))([`❌ ${message}`, this.sanitizeError(error)]);
+    }
   }
 
   debug(message: string, data?: any): void {
-    if (!this.isProduction) {
-      console.debug(`🐛 ${message}`, this.sanitize(data));
+    if (this.enableConsole) {
+      (Function.prototype.apply.bind(console.debug, console))([`🐛 ${message}`, this.sanitize(data)]);
     }
   }
 

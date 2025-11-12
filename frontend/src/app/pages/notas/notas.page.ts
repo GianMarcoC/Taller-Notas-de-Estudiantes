@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService, User } from '../../services/auth.service';
 import { NotasService, Nota } from '../../services/notas.service';
+import { LoggerService } from '../../services/logger.service';
 import { AlertController } from '@ionic/angular';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
@@ -25,6 +26,7 @@ export class NotasPage implements OnInit {
   constructor(
     private authService: AuthService,
     private notasService: NotasService,
+    private logger: LoggerService,
     private alertController: AlertController
   ) {}
 
@@ -42,14 +44,16 @@ export class NotasPage implements OnInit {
   cargarNotas() {
     this.notasService.obtenerNotasProfesor().subscribe({
       next: (notas) => {
-        console.log('Notas cargadas:', notas);
+        this.logger.debug('Notas cargadas', { 
+          count: notas.length 
+        });
         this.notas = notas;
         this.notasFiltradas = [...this.notas];
         // Enriquecer las notas con datos de estudiantes
         this.enriquecerNotasConDatos();
       },
       error: (error) => {
-        console.error('Error cargando notas:', error);
+        this.logger.error('Error cargando notas', error);
         this.mostrarMensaje('Error', 'No se pudieron cargar las notas');
       },
     });
@@ -61,7 +65,7 @@ export class NotasPage implements OnInit {
         this.cursos = cursos;
       },
       error: (error) => {
-        console.error('Error cargando cursos:', error);
+        this.logger.error('Error cargando cursos', error);
       },
     });
   }
@@ -74,7 +78,7 @@ export class NotasPage implements OnInit {
         this.enriquecerNotasConDatos();
       },
       error: (error) => {
-        console.error('Error cargando estudiantes:', error);
+        this.logger.error('Error cargando estudiantes', error);
       },
     });
   }
@@ -144,78 +148,78 @@ export class NotasPage implements OnInit {
   }
 
   async agregarNota() {
-  const alert = await this.alertController.create({
-    header: 'Registrar Nueva Calificación',
-    cssClass: 'formulario-calificacion',
-    inputs: [
-      {
-        name: 'estudiante_id',
-        type: 'number',
-        placeholder: 'ID del estudiante',
-        min: 1,
-        attributes: {
-          required: 'true',
-          pattern: '[0-9]*'
+    const alert = await this.alertController.create({
+      header: 'Registrar Nueva Calificación',
+      cssClass: 'formulario-calificacion',
+      inputs: [
+        {
+          name: 'estudiante_id',
+          type: 'number',
+          placeholder: 'ID del estudiante',
+          min: 1,
+          attributes: {
+            required: 'true',
+            pattern: '[0-9]*'
+          },
         },
-      },
-      {
-        name: 'asignatura',
-        type: 'text',
-        placeholder: 'Materia/Asignatura',
-        attributes: {
-          required: 'true',
+        {
+          name: 'asignatura',
+          type: 'text',
+          placeholder: 'Materia/Asignatura',
+          attributes: {
+            required: 'true',
+          },
         },
-      },
-      {
-        name: 'calificacion',
-        type: 'number', // Usar type 'number' para mejor experiencia en móviles
-        placeholder: 'Calificación (0.0 - 5.0)',
-        min: 0,
-        max: 5,
-        attributes: {
-          required: 'true',
-          step: '0.1', // ✅ Correcto: dentro de attributes
-          inputmode: 'decimal' // Mejor para teclado en móviles
+        {
+          name: 'calificacion',
+          type: 'number',
+          placeholder: 'Calificación (0.0 - 5.0)',
+          min: 0,
+          max: 5,
+          attributes: {
+            required: 'true',
+            step: '0.1',
+            inputmode: 'decimal'
+          },
         },
-      },
-      {
-        name: 'periodo',
-        type: 'text',
-        placeholder: 'Periodo (ej: 2024-2)',
-        value: '2024-2',
-        attributes: {
-          required: 'true',
-          pattern: '[0-9]{4}-[1-2]' // Validación básica de formato
+        {
+          name: 'periodo',
+          type: 'text',
+          placeholder: 'Periodo (ej: 2024-2)',
+          value: '2024-2',
+          attributes: {
+            required: 'true',
+            pattern: '[0-9]{4}-[1-2]'
+          },
         },
-      },
-      {
-        name: 'observaciones',
-        type: 'textarea',
-        placeholder: 'Observaciones (opcional)',
-        attributes: {
-          maxlength: '200'
+        {
+          name: 'observaciones',
+          type: 'textarea',
+          placeholder: 'Observaciones (opcional)',
+          attributes: {
+            maxlength: '200'
+          },
         },
-      },
-    ],
-    buttons: [
-      {
-        text: 'Cancelar',
-        role: 'cancel',
-        cssClass: 'btn-cancelar',
-      },
-      {
-        text: 'Guardar',
-        cssClass: 'btn-guardar',
-        handler: (data) => {
-          this.guardarNuevaNota(data);
-          return false;
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'btn-cancelar',
         },
-      },
-    ],
-  });
+        {
+          text: 'Guardar',
+          cssClass: 'btn-guardar',
+          handler: (data) => {
+            this.guardarNuevaNota(data);
+            return false;
+          },
+        },
+      ],
+    });
 
-  await alert.present();
-}
+    await alert.present();
+  }
 
   private async guardarNuevaNota(data: any) {
     if (
@@ -250,7 +254,7 @@ export class NotasPage implements OnInit {
         this.cargarNotas(); // Recargar la lista
       },
       error: (error) => {
-        console.error('Error:', error);
+        this.logger.error('Error registrando calificación', error);
         this.mostrarMensaje(
           'Error',
           'Error al registrar la calificación: ' + error.message
@@ -259,53 +263,54 @@ export class NotasPage implements OnInit {
     });
   }
 
- async editarNota(nota: Nota) {
-  const alert = await this.alertController.create({
-    header: 'Editar Calificación',
-    subHeader: `Estudiante: ${nota.estudianteNombre || 'N/A'}`,
-    cssClass: 'formulario-calificacion',
-    inputs: [
-      {
-        name: 'calificacion',
-        type: 'number',
-        value: nota.calificacion,
-        placeholder: 'Calificación (0.0 - 5.0)',
-        min: 0,
-        max: 5,
-        attributes: {
-          required: true,
-          step: '0.1' // ✅ DENTRO de attributes
+  async editarNota(nota: Nota) {
+    const alert = await this.alertController.create({
+      header: 'Editar Calificación',
+      subHeader: `Estudiante: ${nota.estudianteNombre || 'N/A'}`,
+      cssClass: 'formulario-calificacion',
+      inputs: [
+        {
+          name: 'calificacion',
+          type: 'number',
+          value: nota.calificacion,
+          placeholder: 'Calificación (0.0 - 5.0)',
+          min: 0,
+          max: 5,
+          attributes: {
+            required: true,
+            step: '0.1'
+          },
         },
-      },
-      {
-        name: 'observaciones',
-        type: 'textarea',
-        value: nota.observaciones || '',
-        placeholder: 'Observaciones o comentarios...',
-        attributes: {
-          maxlength: '200'
+        {
+          name: 'observaciones',
+          type: 'textarea',
+          value: nota.observaciones || '',
+          placeholder: 'Observaciones o comentarios...',
+          attributes: {
+            maxlength: '200'
+          },
         },
-      },
-    ],
-    buttons: [
-      {
-        text: 'Cancelar',
-        role: 'cancel',
-        cssClass: 'btn-cancelar',
-      },
-      {
-        text: 'Actualizar',
-        cssClass: 'btn-guardar',
-        handler: (data) => {
-          this.actualizarNotaExistente(nota, data);
-          return false;
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'btn-cancelar',
         },
-      },
-    ],
-  });
+        {
+          text: 'Actualizar',
+          cssClass: 'btn-guardar',
+          handler: (data) => {
+            this.actualizarNotaExistente(nota, data);
+            return false;
+          },
+        },
+      ],
+    });
 
-  await alert.present();
-}
+    await alert.present();
+  }
+
   private async actualizarNotaExistente(nota: Nota, data: any) {
     if (!data.calificacion) {
       this.mostrarMensaje('Error', 'La calificación es requerida');
@@ -331,7 +336,7 @@ export class NotasPage implements OnInit {
         this.cargarNotas();
       },
       error: (error) => {
-        console.error('Error:', error);
+        this.logger.error('Error actualizando calificación', error);
         this.mostrarMensaje('Error', 'Error al actualizar la calificación');
       },
     });
@@ -366,7 +371,7 @@ export class NotasPage implements OnInit {
                 this.cargarNotas();
               },
               error: (error) => {
-                console.error('Error:', error);
+                this.logger.error('Error eliminando calificación', error);
                 this.mostrarMensaje(
                   'Error',
                   'Error al eliminar la calificación'

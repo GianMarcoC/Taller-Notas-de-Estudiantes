@@ -4,6 +4,7 @@ import {
   Estudiante,
 } from '../../services/estudiantes.service';
 import { AuthService } from '../../services/auth.service';
+import { LoggerService } from '../../services/logger.service';
 import {
   AlertController,
   IonicModule,
@@ -27,7 +28,8 @@ export class EstudiantesPage implements OnInit {
     private estudiantesService: EstudiantesService,
     private authService: AuthService,
     private loadingCtrl: LoadingController,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private logger: LoggerService
   ) {}
 
   async ngOnInit() {
@@ -44,11 +46,13 @@ export class EstudiantesPage implements OnInit {
     this.estudiantesService.obtenerEstudiantes().subscribe({
       next: async (data) => {
         this.estudiantes = data;
-        console.log('✅ Estudiantes cargados:', data);
+        this.logger.debug('Estudiantes cargados', { 
+          count: data.length 
+        });
         await loading.dismiss();
       },
       error: async (err) => {
-        console.error('❌ Error al cargar estudiantes:', err);
+        this.logger.error('Error al cargar estudiantes', err);
         await loading.dismiss();
         const alert = await this.alertCtrl.create({
           header: 'Error',
@@ -74,13 +78,13 @@ export class EstudiantesPage implements OnInit {
   }
 
   nuevoEstudiante() {
-    console.log(
-      '➕ Nuevo estudiante (pendiente de implementar modal/formulario)'
-    );
+    this.logger.debug('Nuevo estudiante - función pendiente de implementar');
   }
 
   editarEstudiante(estudiante: Estudiante) {
-    console.log('✏️ Editar estudiante:', estudiante);
+    this.logger.debug('Editando estudiante', { 
+      id: estudiante.id 
+    });
   }
 
   async eliminarEstudiante(estudiante: Estudiante) {
@@ -100,8 +104,9 @@ export class EstudiantesPage implements OnInit {
                     (e) => e.id !== estudiante.id
                   );
                 },
-                error: (err) =>
-                  console.error('Error al eliminar estudiante:', err),
+                error: (err) => {
+                  this.logger.error('Error al eliminar estudiante', err);
+                },
               });
           },
         },

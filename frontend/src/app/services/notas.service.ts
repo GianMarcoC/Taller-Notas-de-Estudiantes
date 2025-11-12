@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { LoggerService } from './logger.service';
 
 export interface Nota {
   id?: number;
@@ -33,7 +34,10 @@ export interface Curso {
 export class NotasService {
   private apiUrl = 'http://3.145.217.121:8000/notas';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private logger: LoggerService
+  ) {}
 
   private getAuthHeaders() {
     const token = localStorage.getItem('auth_token');
@@ -49,7 +53,7 @@ export class NotasService {
       .pipe(
         map((notas) => this.adaptarNotasBackend(notas)),
         catchError((error) => {
-          console.error('Error obteniendo notas:', error);
+          this.logger.error('Error obteniendo notas', error);
           return of([]);
         })
       );
@@ -61,7 +65,7 @@ export class NotasService {
       .pipe(
         map((notas) => this.adaptarNotasBackend(notas)),
         catchError((error) => {
-          console.error('Error obteniendo mis notas:', error);
+          this.logger.error('Error obteniendo mis notas', error);
           return of([]);
         })
       );
@@ -83,7 +87,7 @@ export class NotasService {
       .pipe(
         map((nuevaNota) => this.adaptarNotaBackend(nuevaNota)),
         catchError((error) => {
-          console.error('Error creando nota:', error);
+          this.logger.error('Error creando nota', error);
           throw error;
         })
       );
@@ -105,7 +109,7 @@ export class NotasService {
       .pipe(
         map((nuevaNota) => this.adaptarNotaBackend(nuevaNota)),
         catchError((error) => {
-          console.error('Error actualizando nota:', error);
+          this.logger.error('Error actualizando nota', error);
           throw error;
         })
       );
@@ -116,7 +120,7 @@ export class NotasService {
       .delete(`${this.apiUrl}/${id}`, { headers: this.getAuthHeaders() })
       .pipe(
         catchError((error) => {
-          console.error('Error eliminando nota:', error);
+          this.logger.error('Error eliminando nota', error);
           throw error;
         })
       );
