@@ -19,7 +19,7 @@ export interface LoginResponse {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://18.224.150.117:8000/api/auth';
+  private apiUrl = 'http://127.0.0.1:8000/api/auth';
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 

@@ -1,6 +1,0 @@
-projectKey=PruebaClase
-serverUrl=http://localhost:9000
-serverVersion=25.10.0.114319
-dashboardUrl=http://localhost:9000/dashboard?id=PruebaClase
-ceTaskId=006d9d96-14e9-45f4-b09d-9e49a71458e0
-ceTaskUrl=http://localhost:9000/api/ce/task?id=006d9d96-14e9-45f4-b09d-9e49a71458e0
