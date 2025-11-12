@@ -11,7 +11,7 @@ from app.security import (
     clear_auth_cookie
 )
 
-router = APIRouter(prefix="/api/auth", tags=["authentication"])
+router = APIRouter(prefix="/auth", tags=["authentication"])
 
 # ---------------------- LOGIN ----------------------
 @router.post("/login", response_model=dict)
