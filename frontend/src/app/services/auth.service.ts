@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { LoggerService } from './logger.service';
 
 export interface User {
   id: number;
@@ -22,25 +23,59 @@ export class AuthService {
   private apiUrl = 'http://3.145.217.121:8000/api/auth';
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
+  
+  // Claves para almacenamiento seguro
+  private readonly TOKEN_KEY = 'auth_token';
+  private readonly USER_KEY = 'current_user';
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private logger: LoggerService
+  ) {
     this.loadUserFromStorage();
   }
 
   /** 🔹 Cargar usuario almacenado al iniciar la app */
   private loadUserFromStorage() {
-    const token = localStorage.getItem('auth_token');
-    const userData = localStorage.getItem('current_user');
+    const token = this.getToken();
+    const userData = this.getStoredUser();
 
     if (token && userData) {
       try {
         const user: User = JSON.parse(userData);
         this.currentUserSubject.next(user);
       } catch (err) {
-        console.error('⚠️ Error al leer current_user del storage:', err);
+        this.logger.error('Error al leer current_user del storage', err);
         this.logout();
       }
     }
+  }
+
+  /** 🔹 Almacenamiento seguro del token */
+  setToken(token: string): void {
+    sessionStorage.setItem(this.TOKEN_KEY, token);
+  }
+
+  /** 🔹 Obtener token de forma segura */
+  getToken(): string | null {
+    return sessionStorage.getItem(this.TOKEN_KEY);
+  }
+
+  /** 🔹 Almacenamiento seguro del usuario (solo datos necesarios) */
+  setCurrentUser(user: User): void {
+    const safeUserData = {
+      id: user.id,
+      nombre: user.nombre,
+      role: user.role
+    };
+    
+    sessionStorage.setItem(this.USER_KEY, JSON.stringify(safeUserData));
+    this.currentUserSubject.next(user);
+  }
+
+  /** 🔹 Obtener usuario almacenado de forma segura */
+  private getStoredUser(): string | null {
+    return sessionStorage.getItem(this.USER_KEY);
   }
 
   /** 🔹 Cambiar de rol manualmente (debug o pruebas) */
@@ -48,8 +83,7 @@ export class AuthService {
     const user = this.getCurrentUser();
     if (user) {
       user.role = newRole;
-      localStorage.setItem('current_user', JSON.stringify(user));
-      this.currentUserSubject.next(user);
+      this.setCurrentUser(user);
     }
   }
 
@@ -60,17 +94,13 @@ export class AuthService {
       .pipe(
         tap((response) => {
           if (response.access_token) {
-            console.log('✅ Token recibido:', response.access_token);
-            localStorage.setItem('auth_token', response.access_token);
+            this.logger.debug('Token recibido');
+            this.setToken(response.access_token);
 
             // Si el backend devuelve el usuario directamente
             if (response.user) {
-              console.log('👤 Usuario recibido desde backend:', response.user);
-              localStorage.setItem(
-                'current_user',
-                JSON.stringify(response.user)
-              );
-              this.currentUserSubject.next(response.user);
+              this.logger.debug('Usuario recibido desde backend');
+              this.setCurrentUser(response.user);
             } else {
               // Si no, lo decodificamos manualmente desde el JWT
               const payload = this.decodeToken(response.access_token);
@@ -81,9 +111,11 @@ export class AuthService {
                   email: payload.sub,
                   role: payload.rol || payload.role || 'estudiante',
                 };
-                console.log('🧩 Usuario construido desde token:', user);
-                localStorage.setItem('current_user', JSON.stringify(user));
-                this.currentUserSubject.next(user);
+                this.logger.debug('Usuario construido desde token', {
+                  id: user.id,
+                  role: user.role
+                });
+                this.setCurrentUser(user);
               }
             }
           }
@@ -98,9 +130,9 @@ export class AuthService {
 
   /** 🔹 Logout (eliminar sesión) */
   logout(): void {
-    console.log('🚪 Cerrando sesión...');
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('current_user');
+    this.logger.debug('Cerrando sesión');
+    sessionStorage.removeItem(this.TOKEN_KEY);
+    sessionStorage.removeItem(this.USER_KEY);
     this.currentUserSubject.next(null);
   }
 
@@ -111,11 +143,11 @@ export class AuthService {
 
   /** 🔹 Verificar si el usuario está autenticado */
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('auth_token');
+    const token = this.getToken();
     if (!token) return false;
 
     const valid = this.isTokenValid();
-    console.log('🔐 Token válido?', valid);
+    this.logger.debug('Token válido?', { valid });
     return valid;
   }
 
@@ -123,23 +155,23 @@ export class AuthService {
   hasRole(role: string): boolean {
     const user = this.getCurrentUser();
     const has = user?.role === role || (user as any)?.rol === role;
-    console.log(`🎭 Verificando rol "${role}":`, has);
+    this.logger.debug(`Verificando rol "${role}"`, { has });
     return has;
   }
 
   /** 🔹 Verificar si el token aún no expiró */
   isTokenValid(): boolean {
-    const token = localStorage.getItem('auth_token');
+    const token = this.getToken();
     if (!token) return false;
 
     try {
       const payload = this.decodeToken(token);
       const now = Math.floor(Date.now() / 1000);
       const valid = payload.exp > now;
-      if (!valid) console.warn('⚠️ Token expirado');
+      if (!valid) this.logger.warn('Token expirado');
       return valid;
     } catch (err) {
-      console.error('❌ Error verificando token:', err);
+      this.logger.error('Error verificando token', err);
       return false;
     }
   }
@@ -154,16 +186,17 @@ export class AuthService {
     try {
       const payload = token.split('.')[1];
       const decoded = JSON.parse(atob(payload));
-      console.log('🧩 Token decodificado:', decoded);
+      this.logger.debug('Token decodificado');
       return decoded;
     } catch (error) {
-      console.error('❌ Error decodificando token:', error);
+      this.logger.error('Error decodificando token', error);
       return null;
     }
   }
 
-  /** 🔹 Obtener token JWT almacenado (para encabezados) */
-  getToken(): string | null {
-    return localStorage.getItem('auth_token');
+  /** 🔹 Limpiar todo el almacenamiento (para debugging) */
+  clearStorage(): void {
+    sessionStorage.clear();
+    this.currentUserSubject.next(null);
   }
 }

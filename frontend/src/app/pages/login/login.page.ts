@@ -28,7 +28,7 @@ export class LoginPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    const token = localStorage.getItem('auth_token');
+    const token = this.authService.getToken();
     if (token && this.authService.isAuthenticated()) {
       console.log('🔐 Sesión activa, redirigiendo a /home');
       this.router.navigate(['/home']);
@@ -57,8 +57,8 @@ export class LoginPage implements OnInit {
         console.log('✅ Login exitoso:', response);
 
         if (response.access_token) {
-          // 🔐 Guardar token
-          localStorage.setItem('auth_token', response.access_token);
+          // 🔐 Guardar token usando el servicio seguro
+          this.authService.setToken(response.access_token);
 
           try {
             // 🧩 Decodificar token JWT
@@ -67,18 +67,17 @@ export class LoginPage implements OnInit {
             );
             console.log('🧩 Token decodificado:', payload);
 
-            // 🔎 Determinar rol y usuario
+            // 🔎 Determinar rol y usuario (solo datos necesarios)
             const userRole = payload.rol || payload.role || 'estudiante';
             const userData = {
               id: payload.user_id || 0,
-              nombre: payload.nombre || payload.name || '', // 👈 agregado para cumplir la interfaz
+              nombre: payload.nombre || payload.name || '',
               email: payload.sub,
               role: userRole,
             };
 
-            // 💾 Guardar usuario sincronizado con el token
-            localStorage.setItem('current_user', JSON.stringify(userData));
-            this.authService['currentUserSubject'].next(userData);
+            // 💾 Guardar usuario usando el servicio seguro (solo datos no sensibles)
+            this.authService.setCurrentUser(userData);
 
             await loading.dismiss();
 

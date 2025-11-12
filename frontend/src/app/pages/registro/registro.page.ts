@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { LoggerService } from '../../services/logger.service';
 import {
   AlertController,
   IonicModule,
@@ -27,6 +28,7 @@ export class RegistroPage {
 
   constructor(
     private authService: AuthService,
+    private logger: LoggerService,
     private router: Router,
     private alertController: AlertController,
     private loadingController: LoadingController
@@ -68,18 +70,22 @@ export class RegistroPage {
       rol: this.usuario.rol,
     };
 
-    console.log('📤 Enviando usuario al backend:', nuevoUsuario);
+    this.logger.debug('Enviando usuario al backend', {
+      nombre: nuevoUsuario.nombre,
+      rol: nuevoUsuario.rol,
+      email: '***REDACTED***' // No registrar el email en logs
+    });
 
     this.authService.register(nuevoUsuario).subscribe({
       next: async (res: any) => {
         await loading.dismiss();
-        console.log('✅ Registro exitoso:', res);
+        this.logger.debug('Registro exitoso');
         this.mostrarAlerta('Éxito', 'Tu cuenta ha sido creada correctamente.');
         this.router.navigate(['/login']);
       },
       error: async (err) => {
         await loading.dismiss();
-        console.error('❌ Error al registrar:', err);
+        this.logger.error('Error al registrar', err);
 
         let mensaje = 'Ocurrió un error al crear la cuenta.';
         if (err.error?.detail) {
