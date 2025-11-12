@@ -31,7 +31,7 @@ export interface Curso {
   providedIn: 'root',
 })
 export class NotasService {
-  private apiUrl = 'http://ec2-3-145-217-121.us-east-2.compute.amazonaws.com:8000/notas';
+  private apiUrl = 'http://3.145.217.121:8000/notas';
 
   constructor(private http: HttpClient) {}
 

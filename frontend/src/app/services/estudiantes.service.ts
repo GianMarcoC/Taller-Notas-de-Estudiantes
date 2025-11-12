@@ -16,7 +16,7 @@ export interface Estudiante {
   providedIn: 'root'
 })
 export class EstudiantesService {
-  private apiUrl = 'http://ec2-3-145-217-121.us-east-2.compute.amazonaws.com:8000/api/estudiantes';
+  private apiUrl = 'http://3.145.217.121:8000/api/estudiantes';
 
   constructor(private http: HttpClient) {}
 
