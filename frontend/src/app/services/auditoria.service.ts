@@ -15,7 +15,7 @@ export interface LogAuditoria {
   providedIn: 'root',
 })
 export class AuditoriaService {
-  private apiUrl = 'http://127.0.0.1:8000/auditoria/';
+  private apiUrl = 'http://3.145.217.121:8000/auditoria/';
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 

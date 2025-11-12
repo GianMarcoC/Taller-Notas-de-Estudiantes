@@ -16,7 +16,7 @@ export interface Usuario {
   providedIn: 'root',
 })
 export class UsuariosService {
-  private apiUrl = 'http://127.0.0.1:8000/usuarios'; // ✅ tu endpoint del backend
+  private apiUrl = 'http://3.145.217.121:8000/usuarios'; // ✅ tu endpoint del backend
 
   constructor(private http: HttpClient) {}
 
