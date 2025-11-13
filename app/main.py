@@ -17,6 +17,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Middleware para headers de seguridad
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    return response
+
 # Incluir routers
 app.include_router(auth.router)
 app.include_router(usuarios.router)
