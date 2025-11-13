@@ -8,6 +8,29 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# --- INICIO DEL ARREGLO ---
+# Middleware para añadir encabezados de seguridad
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    # Espera a que la ruta normal genere la respuesta
+    response = await call_next(request)
+    
+    # Añade el encabezado que faltaba para cumplir con el reporte de ZAP
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    
+    # (Opcional, pero muy recomendado)
+    # Ya que estás aquí, puedes añadir otros encabezados de seguridad
+    # que ZAP probablemente buscaría en un escaneo más profundo:
+    
+    # Evita que tu sitio sea cargado en un <iframe> (previene Clickjacking)
+    response.headers["X-Frame-Options"] = "DENY" 
+    
+    # Una política de seguridad de contenido básica para APIs
+    response.headers["Content-Security-Policy"] = "default-src 'self'; object-src 'none'"
+    
+    return response
+# --- FIN DEL ARREGLO ---
+
 # Middleware CORS
 app.add_middleware(
     CORSMiddleware,
